@@ -1,0 +1,831 @@
+/**
+ * Idarah - Mobile-First Stylesheet
+ * style.css
+ * 
+ * Plain-English Purpose:
+ * Provides high-contrast, emerald-green & white mobile-first styling.
+ * Optimized for inexpensive Android phones with large 48px+ touch targets,
+ * full bidirectional RTL support for Urdu, and professional print styles for Monthly PDF reports.
+ */
+
+/* ==========================================================================
+   1. CSS Custom Properties (Design System Tokens)
+   ========================================================================== */
+:root {
+  --primary: #047857;          /* Rich Emerald Green */
+  --primary-hover: #065f46;    /* Deep Emerald */
+  --primary-light: #ecfdf5;    /* Mint tint for active items & badges */
+  --primary-border: #a7f3d0;   /* Light emerald border */
+  --accent: #10b981;           /* Bright green highlight */
+  --gold: #d97706;             /* Golden amber for alerts & warnings */
+  --danger: #dc2626;           /* Crimson red for reversals & errors */
+  --danger-light: #fef2f2;
+  --success: #15803d;          /* Forest green for verified badges */
+  --success-light: #f0fdf4;
+
+  --bg-app: #f8fafc;           /* Crisp clean background */
+  --bg-card: #ffffff;          /* Pure white card surface */
+  --text-main: #0f172a;        /* High-contrast dark slate (WCAG AAA) */
+  --text-muted: #475569;       /* Secondary readable text */
+  --border-color: #cbd5e1;     /* High-contrast boundary */
+  --border-subtle: #e2e8f0;
+
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Urdu Typesetting", "Segoe UI", sans-serif;
+
+  --touch-min-height: 48px;    /* Strict 48px+ tap target rule for budget Android */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   2. Reset & Base Typography
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px; /* Prevents auto-zoom in mobile Safari & Chrome */
+  scroll-behavior: smooth;
+  background-color: var(--bg-app);
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--text-main);
+  background-color: var(--bg-app);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* RTL Support for Urdu */
+[dir="rtl"] body,
+[dir="rtl"] {
+  font-family: var(--font-urdu), var(--font-sans);
+  text-align: right;
+  direction: rtl;
+}
+
+/* ==========================================================================
+   3. Accessible Touch Elements (Buttons & Inputs >= 48px)
+   ========================================================================== */
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+button {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  min-height: var(--touch-min-height);
+  padding: 12px 18px;
+  transition: background-color 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Button Variants */
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(4, 120, 87, 0.25);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-light);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.btn-outline:hover {
+  background-color: var(--border-subtle);
+}
+
+.btn-whatsapp {
+  background-color: #25d366;
+  color: #ffffff;
+}
+
+.btn-whatsapp:hover {
+  background-color: #128c7e;
+}
+
+.btn-sm {
+  min-height: 38px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Inputs & Form Fields */
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.form-control {
+  min-height: var(--touch-min-height);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-color);
+  background-color: #ffffff;
+  color: var(--text-main);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.15);
+}
+
+textarea.form-control {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* ==========================================================================
+   4. App Header & Global Navbar
+   ========================================================================== */
+.app-header {
+  background-color: var(--primary);
+  color: #ffffff;
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background-color: #ffffff;
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand-title-group h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.brand-title-group p {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-selector {
+  min-height: 38px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lang-selector option {
+  background-color: #ffffff;
+  color: var(--text-main);
+}
+
+/* Mosque & Role Meta bar (Under Header) */
+.mosque-bar {
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 16px;
+}
+
+.mosque-bar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+
+.mosque-info-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.user-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   5. Tab Navigation (Mobile Friendly Scrolling Bar)
+   ========================================================================== */
+.nav-tabs-bar {
+  background-color: #ffffff;
+  border-bottom: 2px solid var(--border-subtle);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.nav-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-tabs-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 4px;
+  padding: 4px 12px;
+}
+
+.nav-tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  padding: 10px 14px;
+  min-height: var(--touch-min-height);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.nav-tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+/* ==========================================================================
+   6. Main Content Layout & Cards
+   ========================================================================== */
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  width: 100%;
+  flex: 1;
+}
+
+.card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   7. Fund Balances & Metric Grids
+   ========================================================================== */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.metric-card.zakat-restricted {
+  border-inline-start: 5px solid var(--gold);
+}
+
+.metric-card.general-fund {
+  border-inline-start: 5px solid var(--primary);
+}
+
+.metric-card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-card-amount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 6px 0;
+}
+
+.metric-card-badge {
+  display: inline-block;
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-zakat {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge-general {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+/* ==========================================================================
+   8. Responsive Tables & Ledger Blocks
+   ========================================================================== */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 650px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[dir="rtl"] .data-table th,
+[dir="rtl"] .data-table td {
+  text-align: right;
+}
+
+.data-table th {
+  background-color: #f1f5f9;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.data-table tr:hover {
+  background-color: #f8fafc;
+}
+
+.data-table tr.row-reversed {
+  opacity: 0.65;
+  background-color: #fef2f2;
+  text-decoration: line-through;
+}
+
+.data-table tr.row-reversal {
+  background-color: #fffbeb;
+  font-weight: 600;
+}
+
+.hash-badge {
+  font-family: monospace;
+  font-size: 0.75rem;
+  background-color: #f1f5f9;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.amount-positive {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.amount-negative {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   9. Modals & Dialogs
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-dialog {
+  background-color: #ffffff;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  transform: translateY(20px);
+  transition: transform 0.2s ease;
+}
+
+.modal-overlay.active .modal-dialog {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-muted);
+  min-height: 36px;
+  padding: 4px 8px;
+}
+
+/* ==========================================================================
+   10. Integrity Status Banner
+   ========================================================================== */
+.integrity-banner {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.integrity-banner.intact {
+  background-color: var(--success-light);
+  border: 1.5px solid #86efac;
+  color: #166534;
+}
+
+.integrity-banner.tampered {
+  background-color: var(--danger-light);
+  border: 1.5px solid #fca5a5;
+  color: #991b1b;
+}
+
+/* ==========================================================================
+   11. Attendance Radio / Pill Selector
+   ========================================================================== */
+.attendance-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.attendance-pill-label {
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.attendance-pill-input {
+  display: none;
+}
+
+.attendance-pill-input:checked + .attendance-pill-label.present {
+  background-color: #dcfce7;
+  border-color: #22c55e;
+  color: #15803d;
+}
+
+.attendance-pill-input:checked + .attendance-pill-label.absent {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+  color: #b91c1c;
+}
+
+.attendance-pill-input:checked + .attendance-pill-label.unmarked {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #475569;
+}
+
+/* ==========================================================================
+   12. Toast Notifications
+   ========================================================================== */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 90vw;
+}
+
+[dir="rtl"] .toast-container {
+  right: auto;
+  left: 20px;
+}
+
+.toast {
+  background-color: var(--text-main);
+  color: #ffffff;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideUp 0.25s ease-out;
+}
+
+.toast.toast-error {
+  background-color: var(--danger);
+}
+
+.toast.toast-success {
+  background-color: var(--primary);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   13. Official Receipt Display (Modal & Print)
+   ========================================================================== */
+.receipt-box {
+  background-color: #ffffff;
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.receipt-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 3rem;
+  font-weight: 900;
+  color: rgba(4, 120, 87, 0.06);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--border-subtle);
+  font-size: 0.95rem;
+}
+
+.receipt-row:last-child {
+  border-bottom: none;
+}
+
+.receipt-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.receipt-val {
+  font-weight: 700;
+  color: var(--text-main);
+  text-align: right;
+}
+
+[dir="rtl"] .receipt-val {
+  text-align: left;
+}
+
+/* ==========================================================================
+   14. Print Stylesheet (High-Contrast Audit Report for PDF)
+   ========================================================================== */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  .app-header,
+  .mosque-bar,
+  .nav-tabs-bar,
+  .btn,
+  button,
+  .no-print,
+  .modal-overlay,
+  .toast-container {
+    display: none !important;
+  }
+
+  .main-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+  }
+
+  .table-responsive {
+    overflow: visible !important;
+    border: 1px solid #000000 !important;
+  }
+
+  .data-table {
+    min-width: 100% !important;
+  }
+
+  .data-table th,
+  .data-table td {
+    border: 1px solid #000000 !important;
+    padding: 6px 8px !important;
+    color: #000000 !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-page-break {
+    page-break-after: always;
+  }
+}
+
+.print-only {
+  display: none;
+}

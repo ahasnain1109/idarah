@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <!--
+    Idarah - Transparent Mosque & Madrasa Management Web App
+    index.html
+
+    Plain-English Purpose:
+    This is the main entry point for the Idarah web application.
+    It defines the HTML document structure, mobile responsive viewport,
+    PWA manifest tags, and loads the CSS styling and modular JavaScript files.
+    The entire application runs client-side with zero external build tools,
+    making it 100% ready to deploy directly to Netlify, GitHub Pages, or any web server.
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+  <title>Idarah - Mosque &amp; Madrasa Management</title>
+  <meta name="description" content="Transparent Mosque and Madrasa Management Web App for small mosques and madrasas in India. Triple-entry SHA-256 cryptographic ledger, mobile-first design, bilingual Urdu RTL, and offline-ready." />
+
+  <!-- PWA & Mobile Web Capabilities -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#047857" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Idarah" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!--
+    Single-Page Application Root Container
+    The app.js router dynamically renders views inside this container:
+    - Login / Sign Up Page
+    - Public Ledger Explorer (Zero login required)
+    - Committee Dashboard (Finance, Madrasa, Mosque Ops, Reports, Settings)
+  -->
+  <div id="app-root">
+    <!-- Fallback message in case JavaScript is disabled -->
+    <noscript>
+      <div style="padding: 24px; text-align: center; font-family: sans-serif;">
+        <h2 style="color: #047857;">Idarah Management System</h2>
+        <p>JavaScript is required to run the SHA-256 cryptographic ledger and offline management features. Please enable JavaScript in your browser settings.</p>
+      </div>
+    </noscript>
+  </div>
+
+  <!-- Toast Notification Anchor -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!--
+    Application Scripts (Loaded in exact dependency order)
+    1. config.js       : Configuration, IST helpers, fund definitions, and validation rules
+    2. translations/*  : All visible text in English, Urdu (RTL), Hindi, and Bengali
+    3. hash-chain.js   : Pure JS SHA-256 cryptographic hash chain engine (17-field hashing)
+    4. app.js          : Core application business logic, storage, and UI view rendering
+  -->
+  <script src="config.js"></script>
+  <script src="translations/en.js"></script>
+  <script src="translations/ur.js"></script>
+  <script src="translations/hi.js"></script>
+  <script src="translations/bn.js"></script>
+  <script src="hash-chain.js"></script>
+  <script src="app.js"></script>
+
+  <!-- Service Worker Registration for PWA Installation on Android & iOS -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Idarah Service Worker registered with scope:', reg.scope))
+          .catch((err) => console.warn('Service Worker registration failed:', err));
+      });
+    }
+
+    // Capture install prompt for 1-tap installation on Android Chrome
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const installBtn = document.getElementById('btn-pwa-install');
+      if (installBtn) {
+        installBtn.style.display = 'inline-flex';
+      }
+    });
+
+    window.installIdarahPwa = function() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the Idarah PWA install prompt');
+          }
+          deferredInstallPrompt = null;
+        });
+      } else {
+        alert('To install on iPhone (Safari): tap the Share button (square with arrow) and select "Add to Home Screen". On Android Chrome: tap the 3 dots menu and select "Install app".');
+      }
+    };
+  </script>
+</body>
+</html>
