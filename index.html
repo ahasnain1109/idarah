@@ -30,6 +30,7 @@
 
   <!-- Application Stylesheet -->
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="platform.css" />
 </head>
 <body>
   <!--
@@ -59,13 +60,19 @@
     3. hash-chain.js   : Pure JS SHA-256 cryptographic hash chain engine (17-field hashing)
     4. app.js          : Core application business logic, storage, and UI view rendering
   -->
+  <!--
+    Platform scripts (multi-committee, Supabase-backed). The previous single-mosque
+    localStorage app (app.js, hash-chain.js, translations/*) is kept in the repo for
+    porting its features module by module, but is no longer loaded.
+    supabase-config.js is generated at deploy time by scripts/generate-config.js.
+  -->
   <script src="config.js"></script>
-  <script src="translations/en.js"></script>
-  <script src="translations/ur.js"></script>
-  <script src="translations/hi.js"></script>
-  <script src="translations/bn.js"></script>
-  <script src="hash-chain.js"></script>
-  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="platform-modules.js"></script>
+  <script src="platform-core.js"></script>
+  <script src="platform-onboarding.js"></script>
+  <script src="platform-app.js"></script>
 
   <!-- Service Worker Registration for PWA Installation on Android & iOS -->
   <script>

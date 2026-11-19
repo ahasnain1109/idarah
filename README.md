@@ -5,6 +5,25 @@ A complete, mobile-first web app for small mosques and madrasas in India. Built 
 
 ---
 
+## 🧱 Multi-Committee Platform (Supabase) — Setup
+
+This branch turns Idarah into a shared platform: many committees, each with 1+ modules
+(Mosque, Madarsa, Dargah, Imambargah, Charitable/Waqf), one login per person (India `+91` phone + password).
+
+1. **Create a Supabase project**, then open **SQL Editor** and run `supabase/migrations/001_modular_committees_rls.sql` (safe to re-run).
+2. **Auth settings** (Authentication → Providers → Phone): enable the Phone provider and turn **off "Confirm phone"** while developing (no SMS/OTP is used yet).
+3. **Add your keys**: copy `.env.example` to `.env` and fill `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+   (the anon / publishable key only; **never** the service_role / secret key).
+   Run `node scripts/generate-config.js` to create `supabase-config.js`, then serve the folder (e.g. `npx serve .`).
+4. **Netlify**: add the same two variables under Site settings → Environment variables. `netlify.toml` runs the generator on every deploy.
+
+Security lives in the database: every table has Row Level Security so one committee can never read or change another's data.
+The ledger is append-only with a hash chain computed by the database; `select public.verify_ledger('<committee id>')` re-checks it.
+
+The previous single-mosque localStorage app (`app.js`, `hash-chain.js`, `translations/`) is kept for reference while its features are ported onto the new tables.
+
+---
+
 ## 🚀 Quick Deployment Guide
 
 ### Option 1: Deploy to Netlify (Free & Takes 30 Seconds)

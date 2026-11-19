@@ -1,6 +1,13 @@
 # Netlify Configuration for Idarah Mosque & Madrasa Management
 [build]
   publish = "."
+  # Writes supabase-config.js from VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY (Netlify env vars)
+  command = "node scripts/generate-config.js"
+
+[[headers]]
+  for = "/supabase-config.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 # Security and PWA Headers
 [[headers]]

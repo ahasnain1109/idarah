@@ -8,21 +8,20 @@
  * so the app loads instantly even with zero internet connectivity.
  */
 
-const CACHE_NAME = 'idarah-cache-v2';
+const CACHE_NAME = 'idarah-cache-v3';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
+  './platform.css',
   './config.js',
-  './hash-chain.js',
-  './app.js',
+  './platform-modules.js',
+  './platform-core.js',
+  './platform-onboarding.js',
+  './platform-app.js',
   './manifest.json',
-  './icon.svg',
-  './translations/en.js',
-  './translations/ur.js',
-  './translations/hi.js',
-  './translations/bn.js'
+  './icon.svg'
 ];
 
 // Install Event: pre-caches all static core assets
