@@ -44,8 +44,10 @@
 
   function route() {
     const h = (location.hash || '#overview').replace(/^#/, '');
-    const [name, arg] = h.split('/');
-    if (name === 'module' && arg && moduleById(arg)) return { name: 'module', id: arg };
+    const [name, arg, sub] = h.split('/');
+    if (name === 'module' && arg && moduleById(arg)) {
+      return { name: 'module', id: arg, tab: sub === 'finance' && P.canUseFinance(myRoles()) ? 'finance' : 'details' };
+    }
     if (name === 'team' && isManager()) return { name: 'team' };
     if (name === 'add-module' && isManager()) return { name: 'add-module' };
     return { name: 'overview' };
@@ -276,7 +278,7 @@
     root().querySelector('#pf-switcher').addEventListener('change', onSwitch);
 
     const main = root().querySelector('#pf-main');
-    if (r.name === 'module') renderModulePage(main, moduleById(r.id));
+    if (r.name === 'module') renderModulePage(main, moduleById(r.id), false, r.tab);
     else if (r.name === 'team') renderTeamPage(main);
     else if (r.name === 'add-module') renderAddModulePage(main);
     else renderOverview(main);
@@ -330,9 +332,19 @@
 
   // ---- module page ----------------------------------------------------------
 
-  function renderModulePage(main, mod, editing) {
+  function renderModulePage(main, mod, editing, tab) {
     const d = P.MODULE_DEFS[mod.module_type];
     const canEdit = isManager();
+    const showFinance = P.canUseFinance(myRoles());
+    const tabBar = showFinance
+      ? '<div class="pf-subtabs"><a href="#module/' + esc(mod.id) + '" class="pf-subtab' + (tab !== 'finance' ? ' active' : '') + '">Details</a>' +
+        '<a href="#module/' + esc(mod.id) + '/finance" class="pf-subtab' + (tab === 'finance' ? ' active' : '') + '">💰 Finance</a></div>'
+      : '';
+    if (tab === 'finance' && showFinance && !editing) {
+      main.innerHTML = tabBar + '<h2 class="card-title" style="margin-bottom:12px">' + d.icon + ' ' + esc(mod.module_name) + '</h2><div id="pf-fin-host"></div>';
+      P.renderFinance(main.querySelector('#pf-fin-host'), mod, { committee: committee(), canWrite: true });
+      return;
+    }
 
     if (editing) {
       const values = Object.assign({ module_name: mod.module_name }, mod.details || {});
@@ -372,7 +384,7 @@
     const details = mod.details || {};
     const rows = d.fields.filter(f => f.key !== 'module_name').map(f =>
       '<tr><th scope="row">' + esc(f.label) + '</th><td>' + esc(P.formatFieldValue(f, details[f.key])) + '</td></tr>').join('');
-    main.innerHTML =
+    main.innerHTML = tabBar +
       '<div class="card"><div class="card-header"><div><h2 class="card-title">' + d.icon + ' ' + esc(mod.module_name) + '</h2>' +
       '<p class="card-subtitle">' + esc(d.label) + ' · part of ' + esc(committee().name) + '</p></div>' +
       (canEdit ? '<button class="btn btn-outline btn-sm" id="pf-edit-btn">✏️ Edit details</button>' : '') + '</div>' +

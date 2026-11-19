@@ -179,6 +179,36 @@
       });
     },
 
+    // ---- finance ----
+    async listFunds(moduleId) {
+      return guarded(async () => unwrap(await P.client().from('funds')
+        .select('id, name, is_zakat_eligible').eq('module_id', moduleId).order('name')) || []);
+    },
+
+    async fundBalances(moduleId) {
+      return guarded(async () => {
+        const rows = unwrap(await P.client().rpc('module_fund_balances', { p_module_id: moduleId })) || [];
+        return Object.fromEntries(rows.map(r => [r.fund_id, Number(r.balance)]));
+      });
+    },
+
+    async listLedger(moduleId, limit) {
+      return guarded(async () => unwrap(await P.client().from('ledger_entries')
+        .select('id, seq, entry_date, type, amount, fund_id, method, category, note, donor_name, donor_phone, receipt_no, verify_code, reverses_entry_id, hash')
+        .eq('module_id', moduleId).order('seq', { ascending: false }).limit(limit || 200)) || []);
+    },
+
+    /** The database assigns seq, date, receipt number, verification code and hash. */
+    async addLedgerEntry(row) {
+      return guarded(async () => unwrap(await P.client().from('ledger_entries').insert(row)
+        .select('id, seq, entry_date, type, amount, fund_id, method, category, note, donor_name, donor_phone, receipt_no, verify_code, reverses_entry_id, hash')
+        .single()));
+    },
+
+    async verifyLedger(committeeId) {
+      return guarded(async () => unwrap(await P.client().rpc('verify_ledger', { p_committee_id: committeeId })));
+    },
+
     async listMembers(committeeId) {
       return guarded(async () => {
         const sb = P.client();

@@ -19,3 +19,9 @@ yarn-error.log*
 !.env.example
 supabase-config.js
 node_modules/
+
+# Local Netlify folder
+.netlify
+
+# Netlify CLI link
+.netlify/

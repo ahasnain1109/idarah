@@ -407,14 +407,30 @@ returns text language sql immutable set search_path = '' as $$
   ), 'UTF8')), 'hex');
 $$;
 
+-- Live balance of one fund: donations - expenses, with reversals undoing their target.
+create or replace function private.fund_balance(p_fund_id uuid)
+returns numeric language sql stable security definer set search_path = '' as $$
+  select coalesce(sum(case
+      when l.type = 'donation' then l.amount
+      when l.type = 'expense'  then -l.amount
+      when l.type = 'reversal' then case when t.type = 'donation' then -l.amount else l.amount end
+    end), 0)
+  from public.ledger_entries l
+  left join public.ledger_entries t on t.id = l.reverses_entry_id
+  where l.fund_id = p_fund_id;
+$$;
+
 create or replace function private.ledger_before_insert()
 returns trigger language plpgsql security definer set search_path = '' as $$
 declare
   last_seq bigint;
   last_hash text;
   target public.ledger_entries;
+  v_fund public.funds;
+  zakat_categories constant text[] := array[
+    'poor_needy','ration_aid','medical_aid','widow_orphan','student_stipend','debt_relief','traveler_aid'];
 begin
-  -- serialise writers per committee so seq / prev_hash can never fork
+  -- serialise writers per committee so seq / prev_hash / balances can never race
   perform pg_advisory_xact_lock(hashtextextended(new.committee_id::text, 0));
 
   select l.seq, l.hash into last_seq, last_hash
@@ -430,6 +446,40 @@ begin
     end if;
     if target.type = 'reversal' then
       raise exception 'A reversal entry cannot itself be reversed';
+    end if;
+    if new.note is null or btrim(new.note) = '' then
+      raise exception 'A reason is required to reverse an entry';
+    end if;
+    -- the client cannot choose what a reversal undoes: it mirrors its target exactly
+    new.module_id   := target.module_id;
+    new.fund_id     := target.fund_id;
+    new.amount      := target.amount;
+    new.method      := target.method;
+    new.donor_name  := target.donor_name;
+    new.donor_phone := target.donor_phone;
+    new.category    := 'reversal';
+    if target.type = 'donation' and private.fund_balance(target.fund_id) < target.amount then
+      raise exception 'Cannot reverse this donation: the fund no longer holds enough money';
+    end if;
+  else
+    select * into v_fund from public.funds
+    where id = new.fund_id and committee_id = new.committee_id;
+    if not found then
+      raise exception 'Fund not found';
+    end if;
+    if v_fund.module_id <> new.module_id then
+      raise exception 'This fund belongs to a different module';
+    end if;
+    if new.category is null or btrim(new.category) = '' then
+      raise exception 'Choose a category';
+    end if;
+    if new.type = 'expense' then
+      if new.amount > private.fund_balance(new.fund_id) then
+        raise exception 'Insufficient balance in %: available %', v_fund.name, private.fund_balance(new.fund_id);
+      end if;
+      if v_fund.is_zakat_eligible and not (new.category = any (zakat_categories)) then
+        raise exception 'Zakat funds can only be spent on Zakat-eligible categories';
+      end if;
     end if;
   end if;
 
@@ -773,7 +823,67 @@ create policy committee_memberships_delete on public.committee_memberships for d
   using ((select private.has_committee_role(committee_id, array['admin','mutawalli_trustee']::text[])));
 
 -- ----------------------------------------------------------------------------
--- 8. Function privileges: nothing in "private" is callable by anon / public
+-- 8. Default funds for every module + fund balances
+-- ----------------------------------------------------------------------------
+
+create or replace function private.seed_funds_for(p_module uuid, p_committee uuid, p_type text)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+  insert into public.funds (committee_id, module_id, name, is_zakat_eligible)
+  values
+    (p_committee, p_module, 'General Fund', false),
+    (p_committee, p_module, 'Sadaqah Fund', false),
+    (p_committee, p_module, 'Zakat Fund', true),
+    (p_committee, p_module, 'Fitra (Sadaqatul Fitr)', true)
+  on conflict (module_id, name) do nothing;
+
+  if p_type = 'madarsa' then
+    insert into public.funds (committee_id, module_id, name, is_zakat_eligible)
+    values (p_committee, p_module, 'Madarsa Fees & Education', false)
+    on conflict (module_id, name) do nothing;
+  elsif p_type in ('dargah', 'imambargah') then
+    insert into public.funds (committee_id, module_id, name, is_zakat_eligible)
+    values (p_committee, p_module, 'Nazr / Niyaz Fund', false)
+    on conflict (module_id, name) do nothing;
+  elsif p_type = 'waqf_charity' then
+    insert into public.funds (committee_id, module_id, name, is_zakat_eligible)
+    values (p_committee, p_module, 'Waqf Rent Income', false)
+    on conflict (module_id, name) do nothing;
+  end if;
+end $$;
+
+create or replace function private.seed_default_funds()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  perform private.seed_funds_for(new.id, new.committee_id, new.module_type);
+  return new;
+end $$;
+
+drop trigger if exists organization_modules_seed_funds on public.organization_modules;
+create trigger organization_modules_seed_funds after insert on public.organization_modules
+  for each row execute function private.seed_default_funds();
+
+-- backfill modules created before this trigger existed
+do $$
+declare m record;
+begin
+  for m in select id, committee_id, module_type from public.organization_modules loop
+    perform private.seed_funds_for(m.id, m.committee_id, m.module_type);
+  end loop;
+end $$;
+
+-- Balance of every fund of a module. Only people allowed to read funds get rows.
+create or replace function public.module_fund_balances(p_module_id uuid)
+returns table (fund_id uuid, balance numeric)
+language sql stable security definer set search_path = '' as $$
+  select f.id, private.fund_balance(f.id)
+  from public.funds f
+  where f.module_id = p_module_id
+    and private.can_access(f.committee_id, f.module_id, array['accountant']::text[]);
+$$;
+
+-- ----------------------------------------------------------------------------
+-- 9. Function privileges: nothing in "private" is callable by anon / public
 -- ----------------------------------------------------------------------------
 
 do $$
@@ -795,7 +905,7 @@ begin
     select p.oid::regprocedure as sig
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
-      and p.proname in ('create_committee_with_modules','add_modules','add_member_by_phone','verify_ledger')
+      and p.proname in ('create_committee_with_modules','add_modules','add_member_by_phone','verify_ledger','module_fund_balances')
   loop
     execute format('revoke all on function %s from public, anon', f.sig);
     execute format('grant execute on function %s to authenticated', f.sig);

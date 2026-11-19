@@ -29,6 +29,15 @@
 [dir="rtl"] .pf-list { margin: 8px 20px 12px 0; }
 .pf-kv th { width: 40%; background: #f8fafc; font-weight: 600; }
 
+.pf-btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.pf-subtabs { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border-subtle); }
+.pf-subtab {
+  padding: 10px 16px; min-height: var(--touch-min-height); display: inline-flex; align-items: center;
+  text-decoration: none; font-weight: 700; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px;
+}
+.pf-subtab.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--primary-light); }
+.pf-subtab:focus-visible { outline: 3px solid rgba(4, 120, 87, 0.4); outline-offset: 2px; }
+
 /* ---- phone input with locked +91 ---- */
 .pf-phone { display: flex; align-items: stretch; gap: 0; }
 .pf-cc {

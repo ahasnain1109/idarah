@@ -123,6 +123,56 @@
     parent: 'Read-only: their own linked children'
   };
 
+  // ---- finance vocabulary (keys are stored in the database; labels are display only) ----
+  // The Zakat keys MUST match the list enforced inside private.ledger_before_insert().
+  P.ZAKAT_CATEGORIES = [
+    ['poor_needy', 'Poor & Needy Relief (Fuqara & Masakeen)'],
+    ['ration_aid', 'Direct Ration & Food Aid'],
+    ['medical_aid', 'Emergency Medical Assistance'],
+    ['widow_orphan', 'Widow & Orphan Support'],
+    ['student_stipend', 'Deserving Student Stipend'],
+    ['debt_relief', 'Debt Relief (Gharimeen)'],
+    ['traveler_aid', 'Stranded Traveler Aid (Ibnus-Sabeel)']
+  ];
+  P.GENERAL_EXPENSE_CATEGORIES = [
+    ['exp_electric_water', 'Electricity & Water'],
+    ['exp_staff_salary', 'Staff / Imam / Teacher Salary'],
+    ['exp_repairs', 'Building Repairs & Maintenance'],
+    ['exp_cleaning', 'Cleaning & Sanitation'],
+    ['exp_sound', 'Sound System & Equipment'],
+    ['exp_ramadan_iftar', 'Ramadan Iftar & Community Programs'],
+    ['exp_langar_niyaz', 'Langar / Niyaz Supplies'],
+    ['exp_books', 'Books & Stationery'],
+    ['exp_admin_office', 'Office, Printing & Registers'],
+    ['exp_misc', 'Miscellaneous / Emergency']
+  ];
+  P.DONATION_CATEGORIES = [
+    ['general_donation', 'General Donation'],
+    ['jumuah_collection', "Jumu'ah / Collection Box"],
+    ['zakat_contribution', 'Zakat Contribution'],
+    ['fitra_contribution', 'Fitra (Sadaqatul Fitr)'],
+    ['sadaqah', 'Sadaqah'],
+    ['nazr_niyaz', 'Nazr / Niyaz'],
+    ['waqf_rent', 'Waqf Rent / Income'],
+    ['other', 'Other']
+  ];
+  P.PAYMENT_METHODS = [
+    ['Cash', 'Cash'],
+    ['UPI', 'UPI (QR / PhonePe / GPay)'],
+    ['Bank Transfer', 'Bank Transfer (NEFT / IMPS)'],
+    ['Cheque', 'Cheque']
+  ];
+  P.categoryLabel = function (key) {
+    if (key === 'reversal') return 'Reversal';
+    const all = [].concat(P.ZAKAT_CATEGORIES, P.GENERAL_EXPENSE_CATEGORIES, P.DONATION_CATEGORIES);
+    const hit = all.find(c => c[0] === key);
+    return hit ? hit[1] : (key || '');
+  };
+  /** Roles that may use the finance screens (matches the database: accountant + admin + trustee). */
+  P.canUseFinance = function (roles) {
+    return (roles || []).some(r => r === 'admin' || r === 'mutawalli_trustee' || r === 'accountant');
+  };
+
   P.INDIAN_STATES = [
     'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana',
     'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
