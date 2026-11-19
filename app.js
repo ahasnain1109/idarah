@@ -297,7 +297,7 @@
         phone: '9876543210',
         email: 'admin@noorululoom.org',
         role: 'admin',
-        pin: '123456'
+        pin: hashPin('9876543210', '123456')
       },
       {
         id: 'user_treasurer',
@@ -305,7 +305,7 @@
         phone: '9830112233',
         email: 'tariq@noorululoom.org',
         role: 'treasurer',
-        pin: '123456'
+        pin: hashPin('9830112233', '123456')
       },
       {
         id: 'user_teacher',
@@ -313,7 +313,7 @@
         phone: '9830445566',
         email: 'bilal@noorululoom.org',
         role: 'teacher',
-        pin: '123456'
+        pin: hashPin('9830445566', '123456')
       }
     ];
 
@@ -603,10 +603,62 @@
    */
   function restoreSession() {
     const session = storageGet(CFG.STORAGE_KEYS.CURRENT_SESSION, null);
-    if (session && session.mosqueId && session.user) {
+    if (!session || !session.mosqueId) return;
+    // Sessions store only the user id; the user record (and PIN hash) stays in mosque data.
+    const userId = session.userId || (session.user && session.user.id);
+    const data = getMosqueData(session.mosqueId);
+    const user = data && data.users && data.users.find(u => u.id === userId);
+    if (user) {
       State.currentMosqueId = session.mosqueId;
-      State.currentUser = session.user;
+      State.currentUser = sessionUser(user);
     }
+  }
+
+  /**
+   * Returns a copy of a user record without the PIN, safe to keep in memory/UI state.
+   */
+  function sessionUser(user) {
+    const { pin, ...safe } = user;
+    return safe;
+  }
+
+  /**
+   * Salted SHA-256 digest of a PIN. Prefixed so legacy plaintext PINs can be detected and upgraded.
+   */
+  function hashPin(phone, pin) {
+    return 'h1$' + HASH.sha256('idarah|' + phone + '|' + pin);
+  }
+
+  function pinMatches(user, pin) {
+    if (typeof user.pin === 'string' && user.pin.startsWith('h1$')) {
+      return user.pin === hashPin(user.phone, pin);
+    }
+    return user.pin === pin; // legacy plaintext (upgraded on successful login)
+  }
+
+  // ==========================================================================
+  // Role-Based Permissions
+  // ==========================================================================
+
+  const ROLE_PERMISSIONS = {
+    admin: ['ledger', 'fees', 'salary', 'madrasa', 'ops', 'settings'],
+    treasurer: ['ledger', 'fees', 'salary', 'ops'],
+    teacher: ['madrasa'],
+    viewer: []
+  };
+
+  function can(perm) {
+    const role = State.currentUser && State.currentUser.role;
+    return Boolean(role && (ROLE_PERMISSIONS[role] || []).includes(perm));
+  }
+
+  /**
+   * Returns true if the current user holds the permission; otherwise shows an error toast.
+   */
+  function requirePerm(perm) {
+    if (can(perm)) return true;
+    showToast(t('errPermissionDenied'), 'error');
+    return false;
   }
 
   /**
@@ -633,9 +685,14 @@
     for (const m of catalog) {
       const data = getMosqueData(m.id);
       if (data && data.users) {
-        const found = data.users.find(u => u.phone === phone && u.pin === pin);
+        const found = data.users.find(u => u.phone === phone && pinMatches(u, pin));
         if (found) {
-          authenticatedUser = found;
+          // Upgrade legacy plaintext PIN to a salted hash
+          if (!String(found.pin).startsWith('h1$')) {
+            found.pin = hashPin(found.phone, pin);
+            saveMosqueData(m.id, data);
+          }
+          authenticatedUser = sessionUser(found);
           matchedMosqueId = m.id;
           break;
         }
@@ -654,7 +711,7 @@
 
     storageSet(CFG.STORAGE_KEYS.CURRENT_SESSION, {
       mosqueId: matchedMosqueId,
-      user: authenticatedUser
+      userId: authenticatedUser.id
     });
 
     showToast(t('msgSaved'), 'success');
@@ -721,7 +778,7 @@
       phone: adminPhone,
       email: adminEmail,
       role: 'admin',
-      pin: adminPin
+      pin: hashPin(adminPhone, adminPin)
     };
 
     const initialData = {
@@ -753,12 +810,12 @@
     }
 
     State.currentMosqueId = newMosqueId;
-    State.currentUser = adminUser;
+    State.currentUser = sessionUser(adminUser);
     State.isPublicView = false;
 
     storageSet(CFG.STORAGE_KEYS.CURRENT_SESSION, {
       mosqueId: newMosqueId,
-      user: adminUser
+      userId: adminUser.id
     });
 
     // Open committee onboarding modal immediately!
@@ -797,6 +854,10 @@
    * Generates sequential receipt # and 8-character verification code.
    */
   function addDonationEntry({ amount, fundId, method, note, donorName, donorPhone }) {
+    if (!can('ledger') && !can('fees')) {
+      showToast(t('errPermissionDenied'), 'error');
+      return null;
+    }
     amount = Number(amount);
     if (!amount || amount <= 0) {
       showToast(t('errAmountInvalid'), 'error');
@@ -854,6 +915,7 @@
    * 2. Zakat restriction: if fund is Zakat-restricted, requires Zakat-eligible category.
    */
   function addExpenseEntry({ amount, fundId, category, note, billPhoto }) {
+    if (!requirePerm('ledger')) return null;
     amount = Number(amount);
     if (!amount || amount <= 0) {
       showToast(t('errAmountInvalid'), 'error');
@@ -929,6 +991,7 @@
    * Ledger entries can NEVER be deleted or edited; corrections must be reversed.
    */
   function addReversalEntry(targetSeq, reason) {
+    if (!requirePerm('ledger')) return null;
     const mosqueData = getMosqueData(State.currentMosqueId);
     if (!mosqueData) return null;
 
@@ -971,6 +1034,10 @@
 
     ledger.push(entry);
     mosqueData.ledger = ledger;
+
+    // Reversing a fee/salary payment must also release that month so it can be re-collected
+    mosqueData.feePayments = (mosqueData.feePayments || []).filter(f => f.ledgerSeq !== target.seq);
+    mosqueData.salaryPayments = (mosqueData.salaryPayments || []).filter(p => p.ledgerSeq !== target.seq);
 
     if (!saveMosqueData(State.currentMosqueId, mosqueData)) {
       return null;
@@ -1344,9 +1411,10 @@
           <button type="button" class="nav-tab-btn ${State.activeTab === 'reports' ? 'active' : ''}" data-tab="reports">
             📑 ${escapeHtml(t('navReports'))}
           </button>
+          ${can('settings') ? `
           <button type="button" class="nav-tab-btn ${State.activeTab === 'settings' ? 'active' : ''}" data-tab="settings">
             ⚙️ ${escapeHtml(t('navSettings'))}
-          </button>
+          </button>` : ''}
           <button type="button" class="nav-tab-btn" id="btn-switch-to-public">
             🔍 ${escapeHtml(t('publicTitle'))}
           </button>
@@ -1398,6 +1466,7 @@
         renderReportsTab(container, mosqueMeta, mosqueData);
         break;
       case 'settings':
+        if (!can('settings')) { State.activeTab = 'dashboard'; renderDashboardTab(container, mosqueMeta, mosqueData); break; }
         renderSettingsTab(container, mosqueMeta, mosqueData);
         break;
       default:
@@ -1789,7 +1858,7 @@
     subContainer.querySelectorAll('.delete-student-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
-        if (confirm(t('confirmDelete'))) {
+        if (requirePerm('madrasa') && confirm(t('confirmDelete'))) {
           mosqueData.students = students.filter(s => s.id !== id);
           saveMosqueData(State.currentMosqueId, mosqueData);
           showToast(t('msgSaved'), 'success');
@@ -1890,6 +1959,7 @@
     });
 
     document.getElementById('att-save-btn').addEventListener('click', () => {
+      if (!requirePerm('madrasa')) return;
       const updatedDay = {};
       students.forEach(s => {
         const row = subContainer.querySelector(`tr[data-student-id="${s.id}"]`);
@@ -2058,7 +2128,7 @@
     sub.querySelectorAll('.delete-staff-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
-        if (confirm(t('confirmDelete'))) {
+        if (requirePerm('ops') && confirm(t('confirmDelete'))) {
           mosqueData.staff = staff.filter(s => s.id !== id);
           saveMosqueData(State.currentMosqueId, mosqueData);
           showToast(t('msgSaved'), 'success');
@@ -2155,7 +2225,7 @@
 
     sub.querySelectorAll('.del-nikah-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (confirm(t('confirmDelete'))) {
+        if (requirePerm('ops') && confirm(t('confirmDelete'))) {
           mosqueData.nikah = nikahList.filter(n => n.id !== btn.getAttribute('data-id'));
           saveMosqueData(State.currentMosqueId, mosqueData);
           renderCurrentView();
@@ -2165,7 +2235,7 @@
 
     sub.querySelectorAll('.del-janazah-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (confirm(t('confirmDelete'))) {
+        if (requirePerm('ops') && confirm(t('confirmDelete'))) {
           mosqueData.janazah = janazahList.filter(j => j.id !== btn.getAttribute('data-id'));
           saveMosqueData(State.currentMosqueId, mosqueData);
           renderCurrentView();
@@ -2228,7 +2298,7 @@
 
     sub.querySelectorAll('.del-asset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (confirm(t('confirmDelete'))) {
+        if (requirePerm('ops') && confirm(t('confirmDelete'))) {
           mosqueData.assets = assets.filter(a => a.id !== btn.getAttribute('data-id'));
           saveMosqueData(State.currentMosqueId, mosqueData);
           renderCurrentView();
@@ -2283,7 +2353,7 @@
 
     sub.querySelectorAll('.del-notice-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (confirm(t('confirmDelete'))) {
+        if (requirePerm('ops') && confirm(t('confirmDelete'))) {
           mosqueData.notices = notices.filter(n => n.id !== btn.getAttribute('data-id'));
           saveMosqueData(State.currentMosqueId, mosqueData);
           renderCurrentView();
@@ -2357,7 +2427,7 @@
         </div>
 
         <!-- 4 Key Summary Numbers -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; text-align: center;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; text-align: center;">
           <div style="border: 1px solid var(--border-color); padding: 10px; border-radius: var(--radius-sm);">
             <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">${escapeHtml(t('reportOpeningBalance'))}</div>
             <div style="font-size: 1.25rem; font-weight: 800;" id="rep-open">${escapeHtml(formatCurrency(report.openingTotal))}</div>
@@ -3079,7 +3149,7 @@
 
         const newMem = {
           id: 'user_' + Date.now(),
-          name, phone, role, pin, email: ''
+          name, phone, role, pin: hashPin(phone, pin), email: ''
         };
         tempMembers.push(newMem);
         mosqueData.users = tempMembers;
@@ -3104,6 +3174,7 @@
   // ==========================================================================
 
   function openDonationModal() {
+    if (!requirePerm('ledger')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const funds = getMosqueFunds(mosqueData);
 
@@ -3173,6 +3244,7 @@
   // ==========================================================================
 
   function openExpenseModal() {
+    if (!requirePerm('ledger')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const funds = getMosqueFunds(mosqueData);
     const balances = calculateFundBalances(mosqueData.ledger);
@@ -3370,6 +3442,7 @@
   // ==========================================================================
 
   function openReversalModal(seq) {
+    if (!requirePerm('ledger')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const entry = mosqueData.ledger.find(e => e.seq === seq);
     if (!entry) return;
@@ -3418,6 +3491,7 @@
   // ==========================================================================
 
   function openStudentModal(existingStudent = null) {
+    if (!requirePerm('madrasa')) return;
     const isEdit = Boolean(existingStudent);
     const mosqueData = getMosqueData(State.currentMosqueId);
 
@@ -3492,6 +3566,7 @@
   // ==========================================================================
 
   function openCollectFeeModal(studentId) {
+    if (!requirePerm('fees')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const student = (mosqueData.students || []).find(s => s.id === studentId);
     if (!student) return;
@@ -3572,8 +3647,12 @@
         ledgerSeq: ledgerEntry.seq
       };
 
-      mosqueData.feePayments.push(feePaymentRecord);
-      saveMosqueData(State.currentMosqueId, mosqueData);
+      // Re-read: addDonationEntry already saved the new ledger block, so saving the
+      // stale copy held by this modal would erase it.
+      const freshData = getMosqueData(State.currentMosqueId);
+      freshData.feePayments = freshData.feePayments || [];
+      freshData.feePayments.push(feePaymentRecord);
+      saveMosqueData(State.currentMosqueId, freshData);
 
       showToast(t('msgFeeRecorded', { receiptNo: ledgerEntry.receiptNo }), 'success');
       closeModal();
@@ -3587,6 +3666,7 @@
   // ==========================================================================
 
   function openStaffModal(existingStaff = null) {
+    if (!requirePerm('ops')) return;
     const isEdit = Boolean(existingStaff);
     const mosqueData = getMosqueData(State.currentMosqueId);
 
@@ -3655,6 +3735,7 @@
   // ==========================================================================
 
   function openPaySalaryModal(staffId) {
+    if (!requirePerm('salary')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const staff = (mosqueData.staff || []).find(s => s.id === staffId);
     if (!staff) return;
@@ -3715,7 +3796,10 @@
 
       if (!expenseEntry) return;
 
-      mosqueData.salaryPayments.push({
+      // Re-read: addExpenseEntry already saved the new ledger block (see fee flow note).
+      const freshData = getMosqueData(State.currentMosqueId);
+      freshData.salaryPayments = freshData.salaryPayments || [];
+      freshData.salaryPayments.push({
         id: 'sal_' + Date.now(),
         staffId: staff.id,
         staffName: staff.name,
@@ -3725,7 +3809,7 @@
         ledgerSeq: expenseEntry.seq
       });
 
-      saveMosqueData(State.currentMosqueId, mosqueData);
+      saveMosqueData(State.currentMosqueId, freshData);
       showToast(t('msgSalaryRecorded', { seq: expenseEntry.seq }), 'success');
       closeModal();
       renderCurrentView();
@@ -3737,6 +3821,7 @@
   // ==========================================================================
 
   function openNikahModal() {
+    if (!requirePerm('ops')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const todayIST = getISTDate();
 
@@ -3801,6 +3886,7 @@
   // ==========================================================================
 
   function openJanazahModal() {
+    if (!requirePerm('ops')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const todayIST = getISTDate();
 
@@ -3860,6 +3946,7 @@
   // ==========================================================================
 
   function openAssetModal() {
+    if (!requirePerm('ops')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const todayIST = getISTDate();
 
@@ -3919,6 +4006,7 @@
   // ==========================================================================
 
   function openNoticeModal() {
+    if (!requirePerm('ops')) return;
     const mosqueData = getMosqueData(State.currentMosqueId);
     const todayIST = getISTDate();
 

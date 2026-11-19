@@ -10,6 +10,7 @@
 window.IDARAH_TRANSLATIONS = window.IDARAH_TRANSLATIONS || {};
 
 window.IDARAH_TRANSLATIONS.hi = {
+  errPermissionDenied: 'आपकी भूमिका को यह कार्य करने की अनुमति नहीं है।',
   // Brand & Meta
   appName: 'इदारा (Idarah)',
   appTagline: 'मस्जिद एवं मदरसा प्रबंधन प्रणाली (भारत)',

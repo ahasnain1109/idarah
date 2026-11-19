@@ -10,6 +10,7 @@
 window.IDARAH_TRANSLATIONS = window.IDARAH_TRANSLATIONS || {};
 
 window.IDARAH_TRANSLATIONS.bn = {
+  errPermissionDenied: 'আপনার ভূমিকার এই কাজটি করার অনুমতি নেই।',
   // Brand & Meta
   appName: 'ইদারা (Idarah)',
   appTagline: 'মসজিদ ও মাদ্রাসা পরিচালনা ব্যবস্থা (ভারত)',

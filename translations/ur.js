@@ -10,6 +10,7 @@
 window.IDARAH_TRANSLATIONS = window.IDARAH_TRANSLATIONS || {};
 
 window.IDARAH_TRANSLATIONS.ur = {
+  errPermissionDenied: 'آپ کے کردار کو یہ کام کرنے کی اجازت نہیں ہے۔',
   // Brand & Meta
   appName: 'ادارہ',
   appTagline: 'مسجد و مدرسہ انتظامی نظام برائے ہندوستان',

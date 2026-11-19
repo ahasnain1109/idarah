@@ -768,6 +768,26 @@ textarea.form-control {
 }
 
 /* ==========================================================================
+   13b. Small-Screen (Phone) Refinements
+   ========================================================================== */
+@media (max-width: 600px) {
+  .app-header { padding: 10px 12px; }
+  .header-container { gap: 8px; }
+  .header-controls { flex-wrap: wrap; width: 100%; }
+  .header-controls .btn,
+  .header-controls .lang-selector { flex: 1 1 auto; }
+  .brand-title-group h1 { font-size: 1.1rem; }
+  .main-container { padding: 12px; }
+  .card { padding: 14px; border-radius: var(--radius-md); }
+  .modal-dialog { padding: 16px; max-height: 94vh; }
+  .modal-overlay { padding: 8px; align-items: flex-end; }
+  .metric-card-amount { font-size: 1.3rem; }
+  .toast-container { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+  .receipt-box { padding: 16px; }
+  .receipt-row { flex-wrap: wrap; gap: 4px; }
+}
+
+/* ==========================================================================
    14. Print Stylesheet (High-Contrast Audit Report for PDF)
    ========================================================================== */
 @media print {

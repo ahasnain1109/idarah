@@ -23,6 +23,10 @@
    * Runs natively in any browser or webview without network calls or external libraries.
    */
   function sha256(ascii) {
+    // Encode to UTF-8 bytes first so Urdu/Hindi/Bengali text hashes correctly.
+    // Pure ASCII input is unchanged, so existing ASCII-only ledger hashes stay valid.
+    ascii = unescape(encodeURIComponent(String(ascii)));
+
     function rightRotate(value, amount) {
       return (value >>> amount) | (value << (32 - amount));
     }

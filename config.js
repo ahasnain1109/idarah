@@ -211,9 +211,12 @@ function formatCurrency(amount) {
  */
 function generateVerificationCode() {
   const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // avoiding ambiguous characters like 0/O, 1/I
+  const len = window.IDARAH_CONFIG.VALIDATION.VERIFY_CODE_LENGTH;
+  const rnd = new Uint32Array(len);
+  window.crypto.getRandomValues(rnd); // cryptographically secure, unlike Math.random()
   let code = '';
-  for (let i = 0; i < window.IDARAH_CONFIG.VALIDATION.VERIFY_CODE_LENGTH; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  for (let i = 0; i < len; i++) {
+    code += chars.charAt(rnd[i] % chars.length);
   }
   return code;
 }

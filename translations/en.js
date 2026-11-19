@@ -10,6 +10,7 @@
 window.IDARAH_TRANSLATIONS = window.IDARAH_TRANSLATIONS || {};
 
 window.IDARAH_TRANSLATIONS.en = {
+  errPermissionDenied: 'Your role does not have permission to do this.',
   // Brand & Meta
   appName: 'Idarah',
   appTagline: 'Mosque & Madrasa Management for India',
