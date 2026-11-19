@@ -10,8 +10,12 @@ A complete, mobile-first web app for small mosques and madrasas in India. Built 
 This branch turns Idarah into a shared platform: many committees, each with 1+ modules
 (Mosque, Madarsa, Dargah, Imambargah, Charitable/Waqf), one login per person (India `+91` phone + password).
 
-1. **Create a Supabase project**, then open **SQL Editor** and run `supabase/migrations/001_modular_committees_rls.sql` (safe to re-run).
-2. **Auth settings** (Authentication → Providers → Phone): enable the Phone provider and turn **off "Confirm phone"** while developing (no SMS/OTP is used yet).
+1. **Create a Supabase project**, then open **SQL Editor** and run, in this order (each is safe to re-run):
+   1. `supabase/migrations/001_modular_committees_rls.sql` - committees, modules, roles, operational tables, RLS
+   2. `supabase/migrations/002_finance_tamper_evident_ledger.sql` - funds + append-only, hash-chained ledger
+   (If an earlier draft of 001 is already installed, running only 002 is enough. It replaces the draft finance tables.)
+2. **Auth settings**: Authentication -> Sign In / Providers -> User Signups: turn **off "Confirm email"**. Leave the Phone provider OFF
+   (it needs a paid SMS provider). The app signs people in with phone + password through a hidden address derived from the number.
 3. **Add your keys**: copy `.env.example` to `.env` and fill `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
    (the anon / publishable key only; **never** the service_role / secret key).
    Run `node scripts/generate-config.js` to create `supabase-config.js`, then serve the folder (e.g. `npx serve .`).

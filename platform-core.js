@@ -60,6 +60,7 @@
     if (/row-level security|permission denied|42501/i.test(msg)) return 'You do not have permission to do this.';
     if (/password should be at least/i.test(msg)) return 'Password must be at least ' + P.MIN_PASSWORD + ' characters.';
     if (/rate limit|too many requests/i.test(msg)) return 'Too many attempts. Please wait a minute and try again.';
+    if (/funds_module_lower_name_idx|already exists in this module/i.test(msg)) return 'A fund with this name already exists in this module.';
     if (/database error saving new user/i.test(msg)) return 'Could not create the account. Please check the mobile number and try again.';
     if (/signups? not allowed|email.*(disabled|not allowed)/i.test(msg)) return 'New sign-ups are switched off on the server.';
     if (/email.*(invalid|not valid)/i.test(msg)) return 'The server rejected the sign-up address. Please contact support.';
@@ -132,6 +133,9 @@
   };
 
   // ---- data ----------------------------------------------------------------
+  const LEDGER_COLUMNS = 'id, sequence_no, created_at, entry_type, amount, fund_id, payment_mode, category, notes, ' +
+    'donor_or_payee_name, donor_phone, receipt_number, verification_code, reversed_entry_id, is_reversed, reversal_reason, entry_hash';
+
   P.api = {
     /** Profile + every committee the user belongs to + the modules they may see. */
     async loadWorkspace(userId) {
@@ -181,32 +185,34 @@
 
     // ---- finance ----
     async listFunds(moduleId) {
-      return guarded(async () => unwrap(await P.client().from('funds')
-        .select('id, name, is_zakat_eligible').eq('module_id', moduleId).order('name')) || []);
+      return guarded(async () => {
+        const rows = unwrap(await P.client().from('funds')
+          .select('id, name, code, description, fund_type, is_zakat_restricted, is_default, current_balance')
+          .eq('module_id', moduleId).order('created_at', { ascending: true })) || [];
+        return rows.map(f => ({ ...f, current_balance: Number(f.current_balance) }));
+      });
     },
 
-    async fundBalances(moduleId) {
-      return guarded(async () => {
-        const rows = unwrap(await P.client().rpc('module_fund_balances', { p_module_id: moduleId })) || [];
-        return Object.fromEntries(rows.map(r => [r.fund_id, Number(r.balance)]));
-      });
+    async createFund({ committeeId, moduleId, name, description, zakatRestricted }) {
+      return guarded(async () => unwrap(await P.client().from('funds').insert({
+        committee_id: committeeId, module_id: moduleId, name, description: description || null,
+        is_zakat_restricted: !!zakatRestricted
+      }).select('id, name, code, description, fund_type, is_zakat_restricted, is_default, current_balance').single()));
     },
 
     async listLedger(moduleId, limit) {
       return guarded(async () => unwrap(await P.client().from('ledger_entries')
-        .select('id, seq, entry_date, type, amount, fund_id, method, category, note, donor_name, donor_phone, receipt_no, verify_code, reverses_entry_id, hash')
-        .eq('module_id', moduleId).order('seq', { ascending: false }).limit(limit || 200)) || []);
+        .select(LEDGER_COLUMNS).eq('module_id', moduleId)
+        .order('sequence_no', { ascending: false }).limit(limit || 200)) || []);
     },
 
-    /** The database assigns seq, date, receipt number, verification code and hash. */
+    /** The database assigns sequence_no, date, receipt number, verification code and hash. */
     async addLedgerEntry(row) {
-      return guarded(async () => unwrap(await P.client().from('ledger_entries').insert(row)
-        .select('id, seq, entry_date, type, amount, fund_id, method, category, note, donor_name, donor_phone, receipt_no, verify_code, reverses_entry_id, hash')
-        .single()));
+      return guarded(async () => unwrap(await P.client().from('ledger_entries').insert(row).select(LEDGER_COLUMNS).single()));
     },
 
-    async verifyLedger(committeeId) {
-      return guarded(async () => unwrap(await P.client().rpc('verify_ledger', { p_committee_id: committeeId })));
+    async verifyModuleLedger(moduleId) {
+      return guarded(async () => unwrap(await P.client().rpc('verify_module_ledger', { target_module_id: moduleId })));
     },
 
     async listMembers(committeeId) {

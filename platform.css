@@ -133,4 +133,13 @@
   .pf-actions .btn { flex: 1; }
 }
 
-@media print { .pf-sidebar { display: none !important; } }
+@media print {
+  .pf-sidebar { display: none !important; }
+  /* printing a single receipt: show only the receipt box */
+  body.pf-printing-receipt #app-root,
+  body.pf-printing-receipt .toast-container { display: none !important; }
+  body.pf-printing-receipt .modal-overlay { display: block !important; position: static !important; background: none !important; opacity: 1 !important; padding: 0 !important; }
+  body.pf-printing-receipt .modal-dialog { box-shadow: none !important; max-height: none !important; padding: 0 !important; transform: none !important; }
+  body.pf-printing-receipt .modal-header,
+  body.pf-printing-receipt .pf-no-print { display: none !important; }
+}

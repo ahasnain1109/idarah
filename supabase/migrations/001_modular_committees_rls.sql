@@ -3,10 +3,10 @@
 -- 001_modular_committees_rls.sql   (idempotent: safe to run more than once)
 --
 -- Model
---   committees (tenant) 1 ── * organization_modules (mosque | madarsa | dargah |
+--   committees (tenant) 1 â”€â”€ * organization_modules (mosque | madarsa | dargah |
 --   imambargah | waqf_charity; several of the same type allowed)
---   profiles (1 per auth user, phone is the login id) ── committee_memberships
---   (roles text[]) ── committees
+--   profiles (1 per auth user, phone is the login id) â”€â”€ committee_memberships
+--   (roles text[]) â”€â”€ committees
 --   Every operational table carries committee_id + module_id and RLS.
 --
 -- Security notes
@@ -208,43 +208,6 @@ create table if not exists public.hifz_logs (
   foreign key (student_id, committee_id) references public.students (id, committee_id) on delete cascade
 );
 
-create table if not exists public.funds (
-  id uuid primary key default gen_random_uuid(),
-  committee_id uuid not null references public.committees(id) on delete cascade,
-  module_id uuid not null references public.organization_modules(id) on delete cascade,
-  name text not null,
-  is_zakat_eligible boolean not null default false,
-  created_at timestamptz not null default now(),
-  unique (id, committee_id),
-  unique (module_id, name),
-  foreign key (module_id, committee_id) references public.organization_modules (id, committee_id) on delete cascade
-);
-
-create table if not exists public.ledger_entries (
-  id uuid primary key default gen_random_uuid(),
-  committee_id uuid not null references public.committees(id) on delete cascade,
-  module_id uuid not null references public.organization_modules(id) on delete cascade,
-  seq bigint not null,
-  entry_date timestamptz not null default now(),
-  type text not null check (type in ('donation','expense','reversal')),
-  amount numeric(14,2) not null check (amount > 0),
-  fund_id uuid not null,
-  method text, category text, note text,
-  donor_name text, donor_phone text,
-  receipt_no text, verify_code text,
-  recorded_by uuid references auth.users(id) on delete set null,
-  reverses_entry_id uuid references public.ledger_entries(id),
-  prev_hash text not null default '',
-  hash text not null default '',
-  unique (id, committee_id),
-  unique (committee_id, seq),
-  foreign key (module_id, committee_id) references public.organization_modules (id, committee_id) on delete cascade,
-  foreign key (fund_id, committee_id) references public.funds (id, committee_id),
-  check ((type = 'reversal') = (reverses_entry_id is not null))
-);
-create unique index if not exists ledger_entries_one_reversal_idx
-  on public.ledger_entries (reverses_entry_id) where reverses_entry_id is not null;
-
 create table if not exists public.donors (
   id uuid primary key default gen_random_uuid(),
   committee_id uuid not null references public.committees(id) on delete cascade,
@@ -252,36 +215,6 @@ create table if not exists public.donors (
   full_name text not null, phone text, address text, notes text,
   created_at timestamptz not null default now(),
   foreign key (module_id, committee_id) references public.organization_modules (id, committee_id) on delete cascade
-);
-
-create table if not exists public.fee_payments (
-  id uuid primary key default gen_random_uuid(),
-  committee_id uuid not null references public.committees(id) on delete cascade,
-  module_id uuid not null references public.organization_modules(id) on delete cascade,
-  student_id uuid not null,
-  month text not null check (month ~ '^\d{4}-(0[1-9]|1[0-2])$'),
-  amount numeric(12,2) not null check (amount > 0),
-  ledger_entry_id uuid,
-  created_at timestamptz not null default now(),
-  unique (student_id, month),   -- no double payment for the same month
-  foreign key (module_id, committee_id) references public.organization_modules (id, committee_id) on delete cascade,
-  foreign key (student_id, committee_id) references public.students (id, committee_id) on delete cascade,
-  foreign key (ledger_entry_id, committee_id) references public.ledger_entries (id, committee_id)
-);
-
-create table if not exists public.salary_payments (
-  id uuid primary key default gen_random_uuid(),
-  committee_id uuid not null references public.committees(id) on delete cascade,
-  module_id uuid not null references public.organization_modules(id) on delete cascade,
-  teacher_id uuid not null,
-  month text not null check (month ~ '^\d{4}-(0[1-9]|1[0-2])$'),
-  amount numeric(12,2) not null check (amount > 0),
-  ledger_entry_id uuid,
-  created_at timestamptz not null default now(),
-  unique (teacher_id, month),
-  foreign key (module_id, committee_id) references public.organization_modules (id, committee_id) on delete cascade,
-  foreign key (teacher_id, committee_id) references public.teachers (id, committee_id) on delete cascade,
-  foreign key (ledger_entry_id, committee_id) references public.ledger_entries (id, committee_id)
 );
 
 create table if not exists public.prayer_times (
@@ -379,167 +312,6 @@ create table if not exists public.assets (
   created_at timestamptz not null default now(),
   foreign key (module_id, committee_id) references public.organization_modules (id, committee_id) on delete cascade
 );
-
--- ----------------------------------------------------------------------------
--- 4. Append-only ledger: hash chain + immutability
--- ----------------------------------------------------------------------------
-
-create or replace function private.compute_ledger_hash(e public.ledger_entries)
-returns text language sql immutable set search_path = '' as $$
-  select encode(sha256(convert_to(concat_ws('|',
-    e.seq::text,
-    to_char(e.entry_date at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US'),
-    e.type,
-    e.amount::text,
-    e.committee_id::text,
-    e.module_id::text,
-    e.fund_id::text,
-    coalesce(e.method, ''),
-    coalesce(e.category, ''),
-    coalesce(e.note, ''),
-    coalesce(e.donor_name, ''),
-    coalesce(e.donor_phone, ''),
-    coalesce(e.receipt_no, ''),
-    coalesce(e.verify_code, ''),
-    coalesce(e.recorded_by::text, ''),
-    coalesce(e.reverses_entry_id::text, ''),
-    e.prev_hash
-  ), 'UTF8')), 'hex');
-$$;
-
--- Live balance of one fund: donations - expenses, with reversals undoing their target.
-create or replace function private.fund_balance(p_fund_id uuid)
-returns numeric language sql stable security definer set search_path = '' as $$
-  select coalesce(sum(case
-      when l.type = 'donation' then l.amount
-      when l.type = 'expense'  then -l.amount
-      when l.type = 'reversal' then case when t.type = 'donation' then -l.amount else l.amount end
-    end), 0)
-  from public.ledger_entries l
-  left join public.ledger_entries t on t.id = l.reverses_entry_id
-  where l.fund_id = p_fund_id;
-$$;
-
-create or replace function private.ledger_before_insert()
-returns trigger language plpgsql security definer set search_path = '' as $$
-declare
-  last_seq bigint;
-  last_hash text;
-  target public.ledger_entries;
-  v_fund public.funds;
-  zakat_categories constant text[] := array[
-    'poor_needy','ration_aid','medical_aid','widow_orphan','student_stipend','debt_relief','traveler_aid'];
-begin
-  -- serialise writers per committee so seq / prev_hash / balances can never race
-  perform pg_advisory_xact_lock(hashtextextended(new.committee_id::text, 0));
-
-  select l.seq, l.hash into last_seq, last_hash
-  from public.ledger_entries l
-  where l.committee_id = new.committee_id
-  order by l.seq desc limit 1;
-
-  if new.type = 'reversal' then
-    select * into target from public.ledger_entries
-    where id = new.reverses_entry_id and committee_id = new.committee_id;
-    if not found then
-      raise exception 'Reversal target not found in this committee';
-    end if;
-    if target.type = 'reversal' then
-      raise exception 'A reversal entry cannot itself be reversed';
-    end if;
-    if new.note is null or btrim(new.note) = '' then
-      raise exception 'A reason is required to reverse an entry';
-    end if;
-    -- the client cannot choose what a reversal undoes: it mirrors its target exactly
-    new.module_id   := target.module_id;
-    new.fund_id     := target.fund_id;
-    new.amount      := target.amount;
-    new.method      := target.method;
-    new.donor_name  := target.donor_name;
-    new.donor_phone := target.donor_phone;
-    new.category    := 'reversal';
-    if target.type = 'donation' and private.fund_balance(target.fund_id) < target.amount then
-      raise exception 'Cannot reverse this donation: the fund no longer holds enough money';
-    end if;
-  else
-    select * into v_fund from public.funds
-    where id = new.fund_id and committee_id = new.committee_id;
-    if not found then
-      raise exception 'Fund not found';
-    end if;
-    if v_fund.module_id <> new.module_id then
-      raise exception 'This fund belongs to a different module';
-    end if;
-    if new.category is null or btrim(new.category) = '' then
-      raise exception 'Choose a category';
-    end if;
-    if new.type = 'expense' then
-      if new.amount > private.fund_balance(new.fund_id) then
-        raise exception 'Insufficient balance in %: available %', v_fund.name, private.fund_balance(new.fund_id);
-      end if;
-      if v_fund.is_zakat_eligible and not (new.category = any (zakat_categories)) then
-        raise exception 'Zakat funds can only be spent on Zakat-eligible categories';
-      end if;
-    end if;
-  end if;
-
-  new.seq         := coalesce(last_seq, 0) + 1;
-  new.prev_hash   := coalesce(last_hash, 'GENESIS');
-  new.entry_date  := now();
-  new.recorded_by := (select auth.uid());
-
-  if new.type = 'donation' then
-    new.receipt_no  := 'RCP-' || lpad((select count(*) + 1 from public.ledger_entries
-                        where committee_id = new.committee_id and type = 'donation')::text, 4, '0');
-    new.verify_code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
-  else
-    new.receipt_no  := null;
-    new.verify_code := null;
-  end if;
-
-  new.hash := private.compute_ledger_hash(new);
-  return new;
-end $$;
-
-create or replace function private.ledger_block_mutation()
-returns trigger language plpgsql set search_path = '' as $$
-begin
-  -- allow only cascading deletes (deleting a whole committee/module); never user-level edits
-  if tg_op = 'DELETE' and pg_trigger_depth() > 1 then
-    return old;
-  end if;
-  raise exception 'Ledger entries are append-only: record a reversal instead';
-end $$;
-
-drop trigger if exists ledger_entries_before_insert on public.ledger_entries;
-create trigger ledger_entries_before_insert before insert on public.ledger_entries
-  for each row execute function private.ledger_before_insert();
-
-drop trigger if exists ledger_entries_block_mutation on public.ledger_entries;
-create trigger ledger_entries_block_mutation before update or delete on public.ledger_entries
-  for each row execute function private.ledger_block_mutation();
-
--- Recomputes every hash of a committee's chain. SECURITY INVOKER: RLS applies,
--- so only users allowed to read the ledger get a result.
-create or replace function public.verify_ledger(p_committee_id uuid)
-returns jsonb language plpgsql stable security invoker set search_path = '' as $$
-declare
-  r public.ledger_entries;
-  expected_prev text := 'GENESIS';
-  expected_seq bigint := 1;
-  n bigint := 0;
-begin
-  for r in select * from public.ledger_entries where committee_id = p_committee_id order by seq loop
-    if r.seq <> expected_seq or r.prev_hash <> expected_prev
-       or r.hash <> private.compute_ledger_hash(r) then
-      return jsonb_build_object('valid', false, 'count', n, 'broken_seq', r.seq);
-    end if;
-    expected_prev := r.hash;
-    expected_seq := expected_seq + 1;
-    n := n + 1;
-  end loop;
-  return jsonb_build_object('valid', true, 'count', n, 'last_hash', expected_prev);
-end $$;
 
 -- ----------------------------------------------------------------------------
 -- 5. New-user profile (phone is the login identifier)
@@ -720,10 +492,7 @@ begin
   perform private.apply_ops_policies('students',        staff,                 array['teacher']);
   perform private.apply_ops_policies('attendance',      staff,                 array['teacher']);
   perform private.apply_ops_policies('hifz_logs',       staff,                 array['teacher']);
-  perform private.apply_ops_policies('funds',           array['accountant'],   array['accountant']);
   perform private.apply_ops_policies('donors',          array['accountant'],   array['accountant']);
-  perform private.apply_ops_policies('fee_payments',    array['accountant','teacher'], array['accountant']);
-  perform private.apply_ops_policies('salary_payments', array['accountant'],   array['accountant']);
   perform private.apply_ops_policies('prayer_times',    staff,                 array['imam_zakir']);
   perform private.apply_ops_policies('notices',         staff,                 array['imam_zakir']);
   perform private.apply_ops_policies('nikah_records',   array['imam_zakir'],   array['imam_zakir']);
@@ -733,12 +502,9 @@ begin
   perform private.apply_ops_policies('waqf_assets',     array['accountant'],   array['accountant']);
   perform private.apply_ops_policies('beneficiaries',   array['accountant'],   array['accountant']);
   perform private.apply_ops_policies('assets',          array['accountant'],   array['accountant']);
-  -- ledger: read + insert only. No UPDATE / DELETE policy exists (and triggers block them anyway).
-  perform private.apply_ops_policies('ledger_entries',  array['accountant'],   array['accountant'], false);
+  -- Finance tables (funds, ledger_entries, receipt_sequences, fee_payments, salary_payments)
+  -- live in 002_finance_tamper_evident_ledger.sql.
 end $$;
-
--- Ledger is insert-only: drop the generic update policy created above.
-drop policy if exists ledger_entries_update on public.ledger_entries;
 
 -- Parents: strictly read-only access to their own linked children
 drop policy if exists students_parent_select on public.students;
@@ -756,12 +522,6 @@ create policy hifz_logs_parent_select on public.hifz_logs for select to authenti
   using ((select private.is_member(committee_id)) and exists (
     select 1 from public.students s
     where s.id = hifz_logs.student_id and s.guardian_user_id = (select auth.uid())));
-
-drop policy if exists fee_payments_parent_select on public.fee_payments;
-create policy fee_payments_parent_select on public.fee_payments for select to authenticated
-  using ((select private.is_member(committee_id)) and exists (
-    select 1 from public.students s
-    where s.id = fee_payments.student_id and s.guardian_user_id = (select auth.uid())));
 
 -- profiles: see yourself and people who share a committee with you; edit only name/email
 alter table public.profiles enable row level security;
@@ -823,67 +583,9 @@ create policy committee_memberships_delete on public.committee_memberships for d
   using ((select private.has_committee_role(committee_id, array['admin','mutawalli_trustee']::text[])));
 
 -- ----------------------------------------------------------------------------
--- 8. Default funds for every module + fund balances
--- ----------------------------------------------------------------------------
-
-create or replace function private.seed_funds_for(p_module uuid, p_committee uuid, p_type text)
-returns void language plpgsql security definer set search_path = '' as $$
-begin
-  insert into public.funds (committee_id, module_id, name, is_zakat_eligible)
-  values
-    (p_committee, p_module, 'General Fund', false),
-    (p_committee, p_module, 'Sadaqah Fund', false),
-    (p_committee, p_module, 'Zakat Fund', true),
-    (p_committee, p_module, 'Fitra (Sadaqatul Fitr)', true)
-  on conflict (module_id, name) do nothing;
-
-  if p_type = 'madarsa' then
-    insert into public.funds (committee_id, module_id, name, is_zakat_eligible)
-    values (p_committee, p_module, 'Madarsa Fees & Education', false)
-    on conflict (module_id, name) do nothing;
-  elsif p_type in ('dargah', 'imambargah') then
-    insert into public.funds (committee_id, module_id, name, is_zakat_eligible)
-    values (p_committee, p_module, 'Nazr / Niyaz Fund', false)
-    on conflict (module_id, name) do nothing;
-  elsif p_type = 'waqf_charity' then
-    insert into public.funds (committee_id, module_id, name, is_zakat_eligible)
-    values (p_committee, p_module, 'Waqf Rent Income', false)
-    on conflict (module_id, name) do nothing;
-  end if;
-end $$;
-
-create or replace function private.seed_default_funds()
-returns trigger language plpgsql security definer set search_path = '' as $$
-begin
-  perform private.seed_funds_for(new.id, new.committee_id, new.module_type);
-  return new;
-end $$;
-
-drop trigger if exists organization_modules_seed_funds on public.organization_modules;
-create trigger organization_modules_seed_funds after insert on public.organization_modules
-  for each row execute function private.seed_default_funds();
-
--- backfill modules created before this trigger existed
-do $$
-declare m record;
-begin
-  for m in select id, committee_id, module_type from public.organization_modules loop
-    perform private.seed_funds_for(m.id, m.committee_id, m.module_type);
-  end loop;
-end $$;
-
--- Balance of every fund of a module. Only people allowed to read funds get rows.
-create or replace function public.module_fund_balances(p_module_id uuid)
-returns table (fund_id uuid, balance numeric)
-language sql stable security definer set search_path = '' as $$
-  select f.id, private.fund_balance(f.id)
-  from public.funds f
-  where f.module_id = p_module_id
-    and private.can_access(f.committee_id, f.module_id, array['accountant']::text[]);
-$$;
-
--- ----------------------------------------------------------------------------
--- 9. Function privileges: nothing in "private" is callable by anon / public
+-- 8. Function privileges: nothing in "private" is callable by anon / public
+--    (only PUBLIC/anon are revoked here, so re-running this file never strips
+--     grants that 002 gives to its own helpers)
 -- ----------------------------------------------------------------------------
 
 do $$
@@ -894,9 +596,9 @@ begin
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'private'
   loop
-    execute format('revoke all on function %s from public, anon, authenticated', f.sig);
-    -- only the helpers that RLS policies / verify_ledger evaluate need to be callable
-    if f.sig::text ~ '^private\.(has_committee_role|can_access|is_member|can_see_module|shares_committee|compute_ledger_hash)\(' then
+    execute format('revoke all on function %s from public, anon', f.sig);
+    -- helpers that RLS policies evaluate must be callable by logged-in users
+    if f.sig::text ~ '^private\.(has_committee_role|can_access|is_member|can_see_module|shares_committee)\(' then
       execute format('grant execute on function %s to authenticated', f.sig);
     end if;
   end loop;
@@ -905,7 +607,7 @@ begin
     select p.oid::regprocedure as sig
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
-      and p.proname in ('create_committee_with_modules','add_modules','add_member_by_phone','verify_ledger','module_fund_balances')
+      and p.proname in ('create_committee_with_modules','add_modules','add_member_by_phone')
   loop
     execute format('revoke all on function %s from public, anon', f.sig);
     execute format('grant execute on function %s to authenticated', f.sig);

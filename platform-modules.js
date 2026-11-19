@@ -126,13 +126,13 @@
   // ---- finance vocabulary (keys are stored in the database; labels are display only) ----
   // The Zakat keys MUST match the list enforced inside private.ledger_before_insert().
   P.ZAKAT_CATEGORIES = [
-    ['poor_needy', 'Poor & Needy Relief (Fuqara & Masakeen)'],
-    ['ration_aid', 'Direct Ration & Food Aid'],
-    ['medical_aid', 'Emergency Medical Assistance'],
-    ['widow_orphan', 'Widow & Orphan Support'],
-    ['student_stipend', 'Deserving Student Stipend'],
-    ['debt_relief', 'Debt Relief (Gharimeen)'],
-    ['traveler_aid', 'Stranded Traveler Aid (Ibnus-Sabeel)']
+    ['fuqara_poor', 'Fuqara — The Poor'],
+    ['masakin_needy', 'Masakin — The Needy'],
+    ['amilin_zakat_admin', 'Amilin — Zakat Collectors / Administrators'],
+    ['muallafat_new_muslims', 'Muallafat al-Qulub — Hearts to be Reconciled'],
+    ['riqab_freeing_captives', 'Fi al-Riqab — Freeing from Bondage / Debt Relief'],
+    ['gharimin_debtors', 'Al-Gharimin — Those Overwhelmed by Debt'],
+    ['ibn_sabil_wayfarers', 'Ibn al-Sabil — Stranded Travelers']
   ];
   P.GENERAL_EXPENSE_CATEGORIES = [
     ['exp_electric_water', 'Electricity & Water'],
@@ -157,11 +157,15 @@
     ['other', 'Other']
   ];
   P.PAYMENT_METHODS = [
-    ['Cash', 'Cash'],
-    ['UPI', 'UPI (QR / PhonePe / GPay)'],
-    ['Bank Transfer', 'Bank Transfer (NEFT / IMPS)'],
-    ['Cheque', 'Cheque']
+    ['cash', 'Cash'],
+    ['upi', 'UPI (QR / PhonePe / GPay)'],
+    ['bank_transfer', 'Bank Transfer (NEFT / IMPS)'],
+    ['cheque', 'Cheque']
   ];
+  P.paymentLabel = function (key) {
+    const hit = P.PAYMENT_METHODS.find(m => m[0] === key);
+    return hit ? hit[1] : (key || '');
+  };
   P.categoryLabel = function (key) {
     if (key === 'reversal') return 'Reversal';
     const all = [].concat(P.ZAKAT_CATEGORIES, P.GENERAL_EXPENSE_CATEGORIES, P.DONATION_CATEGORIES);
