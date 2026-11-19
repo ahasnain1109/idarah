@@ -209,7 +209,7 @@
       const res = await P.withLoading(root().querySelector('#signup-btn'), 'Creating account…',
         () => P.auth.signUp({ fullName, tenDigits: digits, password: pass, email }));
       if (res.needsConfirmation) {
-        authError('Account created, but the server requires phone confirmation. Turn off "Confirm phone" in Supabase Auth settings while developing, then log in.');
+        authError('Account created, but the server still wants email confirmation. In Supabase: Authentication > Sign In / Providers > turn OFF "Confirm email" and save, then log in.');
         return;
       }
       App.session = res.session;

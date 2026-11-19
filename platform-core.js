@@ -15,6 +15,10 @@
   P.PHONE_RE = /^[6-9]\d{9}$/;
   P.cleanPhoneDigits = function (raw) { return String(raw || '').replace(/\D/g, '').slice(-10); };
   P.toE164 = function (tenDigits) { return '+91' + tenDigits; };
+  // Until SMS/OTP exists, the phone number is mapped to a hidden login address
+  // (Supabase's Phone provider needs a paid SMS account). The database trigger
+  // derives profiles.phone from this exact format.
+  P.toLoginEmail = function (tenDigits) { return '91' + tenDigits + '@phone.idarah.example.com'; };
   P.MIN_PASSWORD = 8;
 
   // ---- toast ---------------------------------------------------------------
@@ -56,7 +60,9 @@
     if (/row-level security|permission denied|42501/i.test(msg)) return 'You do not have permission to do this.';
     if (/password should be at least/i.test(msg)) return 'Password must be at least ' + P.MIN_PASSWORD + ' characters.';
     if (/rate limit|too many requests/i.test(msg)) return 'Too many attempts. Please wait a minute and try again.';
-    if (/unsupported phone provider|sms|phone provider/i.test(msg)) return 'Phone sign-in is not enabled on the server yet (Supabase Phone provider).';
+    if (/database error saving new user/i.test(msg)) return 'Could not create the account. Please check the mobile number and try again.';
+    if (/signups? not allowed|email.*(disabled|not allowed)/i.test(msg)) return 'New sign-ups are switched off on the server.';
+    if (/email.*(invalid|not valid)/i.test(msg)) return 'The server rejected the sign-up address. Please contact support.';
     return msg;
   };
 
@@ -104,7 +110,7 @@
     async signUp({ fullName, tenDigits, password, email }) {
       return guarded(async () => {
         const data = unwrap(await P.client().auth.signUp({
-          phone: P.toE164(tenDigits),
+          email: P.toLoginEmail(tenDigits),
           password,
           options: { data: { full_name: fullName, contact_email: email || '' } }
         }));
@@ -114,7 +120,7 @@
 
     async signIn({ tenDigits, password }) {
       return guarded(async () => unwrap(await P.client().auth.signInWithPassword({
-        phone: P.toE164(tenDigits), password
+        email: P.toLoginEmail(tenDigits), password
       })).session);
     },
 

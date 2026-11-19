@@ -500,9 +500,17 @@ returns trigger language plpgsql security definer set search_path = '' as $$
 declare
   v_phone text;
 begin
-  v_phone := case when new.phone is null then null
-                  when new.phone like '+%' then new.phone
-                  else '+' || new.phone end;
+  -- The phone number is the identity. It comes either from the Supabase Phone
+  -- provider (new.phone) or from the app's hidden login address
+  -- <91XXXXXXXXXX>@phone.idarah.example.com (no SMS provider needed).
+  -- It is NEVER taken from client-supplied metadata, so it cannot be spoofed.
+  if new.phone is not null then
+    v_phone := case when new.phone like '+%' then new.phone else '+' || new.phone end;
+  elsif lower(new.email) ~ '^91[6-9][0-9]{9}@phone\.idarah\.example\.com$' then
+    v_phone := '+' || split_part(lower(new.email), '@', 1);
+  else
+    raise exception 'Sign up with an Indian mobile number';
+  end if;
   insert into public.profiles (id, full_name, phone, email)
   values (
     new.id,
