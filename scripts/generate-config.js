@@ -34,7 +34,8 @@ function readDotEnv(file) {
 }
 
 const env = Object.assign({}, readDotEnv(path.join(root, '.env')), process.env);
-const url = (env.VITE_SUPABASE_URL || env.SUPABASE_URL || '').trim();
+// Accept the project URL even if the longer ".../rest/v1/" address was pasted.
+const url = (env.VITE_SUPABASE_URL || env.SUPABASE_URL || '').trim().replace(/\/(rest|auth)\/v1\/?$/i, '').replace(/\/+$/, '');
 const key = (env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || '').trim();
 
 function fatal(msg) { console.error('generate-config: ' + msg); process.exit(1); }
