@@ -108,9 +108,13 @@
   // ---- small screens --------------------------------------------------------
 
   function headerBar(inner) {
+    // language dropdown sits in the top right, just before the Log out button (or alone on login screens)
+    const lang = window.I18N ? window.I18N.selectHtml() : '';
+    const ctl = '<div class="header-controls">';
+    inner = inner && inner.indexOf(ctl) === 0 ? ctl + lang + inner.slice(ctl.length) : ctl + lang + '</div>';
     return '<header class="app-header"><div class="header-container">' +
       '<div class="brand-wrapper"><div class="brand-icon">🕌</div><div class="brand-title-group"><h1>Idarah</h1>' +
-      '<p>Islamic Institutional Management</p></div></div>' + (inner || '') + '</div></header>';
+      '<p>Islamic Institutional Management</p></div></div>' + inner + '</div></header>';
   }
   function loadingScreen(msg) {
     return headerBar() + '<main class="main-container"><div class="card pf-center" aria-busy="true"><div class="pf-spinner" aria-hidden="true"></div><p>' + esc(msg) + '</p></div></main>';

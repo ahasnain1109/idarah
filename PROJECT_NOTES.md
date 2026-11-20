@@ -18,6 +18,7 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 - Tests in the `tests` folder (npm)
 
 ## Built so far (live)
+- Language dropdown (English, Hindi, Bengali, Urdu) in the header next to Log out and on the login screen; Urdu turns the page right-to-left; choice is remembered
 - Login and sign up with a +91 mobile number and password (no OTP yet)
 - Setup wizard: pick modules, fill one short form per module; "Onboard Another Module" later
 - Committee switcher; only onboarded modules are shown
@@ -36,14 +37,14 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 
 ## Left to do
 - Public page to check a receipt without logging in
-- Urdu, Hindi and Bengali languages (the app is English only now)
+- Have a Hindi, Bengali and Urdu speaker proofread `i18n-hi.js`, `i18n-bn.js`, `i18n-ur.js` (written by Claude, about 590 lines each); add any English text that still shows untranslated
 - OTP (SMS) login, so nobody can sign up with someone else's number
 - Automatic database updates (SQL is pasted by hand today)
 - Bill photo upload for expenses
 - Bring old data from the first app (it lives in each phone's browser) if needed
 
 ## How the code is organised (for Claude)
-- No build tool. `index.html` loads plain scripts in this order: `config.js` (helpers), Supabase library (CDN), `supabase-config.js` (generated), `platform-modules.js` (module forms, categories, validation), `platform-core.js` (login, data calls), `platform-onboarding.js` (wizard + form drawing), `platform-ui.js` (pop-up, generic register screen, section registry), `platform-finance.js`, `platform-madarsa.js`, `platform-mosque.js` (also dargah/imambargah/waqf screens), `platform-reports.js`, `platform-app.js` (login screens, header, tabs, dashboard, settings).
+- No build tool. `index.html` loads plain scripts in this order: `config.js` (helpers), `i18n-*.js` + `i18n.js` (language switcher: swaps English text found on the page using the word lists), Supabase library (CDN), `supabase-config.js` (generated), `platform-modules.js` (module forms, categories, validation), `platform-core.js` (login, data calls), `platform-onboarding.js` (wizard + form drawing), `platform-ui.js` (pop-up, generic register screen, section registry), `platform-finance.js`, `platform-madarsa.js`, `platform-mosque.js` (also dargah/imambargah/waqf screens), `platform-reports.js`, `platform-app.js` (login screens, header, tabs, dashboard, settings).
 - Styles: `style.css` (old look, still used) and `platform.css` (new parts).
 - Each module type lists its screens with `P.registerSections(type, [...])`; buttons are hidden by role in the app, but the database (Row Level Security) is what really protects data.
 - The old single-mosque app (`app.js`, `hash-chain.js`, `translations/`) is still in the folder for reference but is not loaded.

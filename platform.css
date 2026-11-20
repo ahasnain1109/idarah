@@ -157,3 +157,10 @@ a.btn.btn-whatsapp { background-color: #25d366; color: #fff; }
   body.pf-printing-receipt .modal-header,
   body.pf-printing-receipt .pf-no-print { display: none !important; }
 }
+
+/* ---- language dropdown (top right, next to Log out) + fonts for Hindi, Bengali, Urdu ---- */
+.pf-lang { width: auto; min-height: 36px; padding: 2px 8px; font-weight: 700; }
+.header-controls { display: flex; align-items: center; gap: 8px; }
+html[lang="hi"] body { font-family: "Noto Sans Devanagari", var(--font-sans); }
+html[lang="bn"] body { font-family: "Noto Sans Bengali", var(--font-sans); }
+html[lang="ur"] body { font-family: var(--font-urdu), var(--font-sans); }

@@ -154,7 +154,7 @@ async function boot(opts) {
   w.confirm = () => true;
   if (!opts.noConfig) w.IDARAH_SUPABASE = { url: 'https://x.supabase.co', anonKey: 'anon' };
   w.supabase = { createClient: () => be.client };
-  for (const f of ['config.js', 'platform-modules.js', 'platform-core.js', 'platform-onboarding.js', 'platform-ui.js', 'platform-finance.js', 'platform-madarsa.js', 'platform-mosque.js', 'platform-reports.js', 'platform-app.js']) w.eval(read(f));
+  for (const f of ['config.js', 'i18n-hi.js', 'i18n-bn.js', 'i18n-ur.js', 'i18n.js', 'platform-modules.js', 'platform-core.js', 'platform-onboarding.js', 'platform-ui.js', 'platform-finance.js', 'platform-madarsa.js', 'platform-mosque.js', 'platform-reports.js', 'platform-app.js']) w.eval(read(f));
   await tick(60);
   return { w, d: w.document, be };
 }
@@ -545,6 +545,42 @@ console.log('\n== familiar layout, dashboard, madarsa, mosque, reports, settings
   ok('parent sees the list but has no add / edit / fee buttons', !r4.d.querySelector('#pf-crud-add') && !r4.d.querySelector('.pf-edit') && !r4.d.querySelector('.pf-xa') && /Zaid/.test(r4.d.querySelector('#pf-sec').textContent));
   ok('parent has no Finance / Reports / Settings tabs', !/Finance|Reports|Settings/.test(r4.d.querySelector('.nav-tabs-container').textContent));
 }
+console.log('\n== language switcher ==');
+{
+  const { w, d } = await boot({});
+  const sel = d.querySelector('select.pf-lang');
+  ok('login screen has a language dropdown with 4 languages', !!sel && sel.options.length === 4 && Array.from(sel.options).map(o => o.value).join() === 'en,hi,bn,ur');
+  ok('starts in English, left-to-right', d.documentElement.getAttribute('lang') === 'en' && d.documentElement.getAttribute('dir') === 'ltr' && /Welcome to Idarah/.test(d.body.textContent));
+  setVal(w, sel, 'hi'); await tick();
+  ok('Hindi: text changes, still left-to-right', /इदारा में आपका स्वागत है/.test(d.body.textContent) && d.documentElement.getAttribute('dir') === 'ltr');
+  setVal(w, d.querySelector('select.pf-lang'), 'bn'); await tick();
+  ok('Bengali: text changes', /ইদারায় স্বাগতম/.test(d.body.textContent));
+  setVal(w, d.querySelector('select.pf-lang'), 'ur'); await tick();
+  ok('Urdu: text changes and page turns right-to-left', /ادارہ میں خوش آمدید/.test(d.body.textContent) && d.documentElement.getAttribute('dir') === 'rtl');
+  ok('Urdu: placeholder is translated too', /10 ہندسوں/.test(d.querySelector('#login-phone').getAttribute('placeholder')));
+  d.querySelector('#tab-signup').click(); await tick();
+  ok('language stays after moving to Sign Up', /اکاؤنٹ بنائیں/.test(d.body.textContent) && d.querySelector('select.pf-lang').value === 'ur');
+  setVal(w, d.querySelector('select.pf-lang'), 'en'); await tick();
+  ok('back to English restores the original text', /Create Account/.test(d.body.textContent) && d.documentElement.getAttribute('dir') === 'ltr');
+  ok('choice is remembered on the phone', w.localStorage.getItem('idarah_lang') === 'en');
+}
+{
+  const mk = [{ id: 'm1', user_id: 'u1', roles: ['admin'], allowed_modules: null, status: 'active', committee: { id: 'cA', name: 'Test', city: 'Pune', state: 'MH', country: 'India' } }];
+  const { w, d } = await boot({ signedIn: true, memberships: mk, modules: [{ id: 'a1', committee_id: 'cA', module_type: 'mosque', module_name: 'Mosque', details: {}, is_active: true }] });
+  const sel = d.querySelector('.header-controls select.pf-lang');
+  ok('dropdown sits in the header right before the Log out button', !!sel && sel.nextElementSibling === d.querySelector('#pf-logout'));
+  setVal(w, sel, 'hi'); await tick();
+  ok('Hindi on the main screen: Log out and tabs change', /लॉग आउट/.test(d.querySelector('#pf-logout').textContent) && /डैशबोर्ड/.test(d.querySelector('.nav-tabs-container').textContent));
+
+  ok('language names in the dropdown never get translated', Array.from(d.querySelectorAll('select.pf-lang option')).map(o => o.textContent).join() === 'English,हिन्दी,বাংলা,اردو');
+  setVal(w, d.querySelector('select.pf-lang'), 'ur'); await tick();
+  const sample = d.createElement('div'); sample.innerHTML = '<p>Step 2 of 3: Dargah</p><p>Donation recorded: RCP-0001</p><p>Not enough money in General Fund. Available: ₹10.</p><p>Some user typed note</p>'; d.body.appendChild(sample); await tick();
+  const ps = Array.from(sample.querySelectorAll('p')).map(p => p.textContent);
+  ok('patterns keep the changing part (Step 2 of 3)', ps[0] === 'مرحلہ 2 / 3: درگاہ', ps[0]);
+  ok('patterns keep the receipt number', ps[1] === 'عطیہ درج ہو گیا: RCP-0001', ps[1]);
+  ok('text typed by users that is not in the list is left alone', ps[3] === 'Some user typed note');
+}
+
 
 console.log('\n== XSS & offline ==');
 {
