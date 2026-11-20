@@ -13,6 +13,7 @@ This branch turns Idarah into a shared platform: many committees, each with 1+ m
 1. **Create a Supabase project**, then open **SQL Editor** and run, in this order (each is safe to re-run):
    1. `supabase/migrations/001_modular_committees_rls.sql` - committees, modules, roles, operational tables, RLS
    2. `supabase/migrations/002_finance_tamper_evident_ledger.sql` - funds + append-only, hash-chained ledger
+   3. `supabase/migrations/003_madarsa_mosque_ops.sql` - class names, Hifz log upserts, fee collection and salary payment functions
    (If an earlier draft of 001 is already installed, running only 002 is enough. It replaces the draft finance tables.)
 2. **Auth settings**: Authentication -> Sign In / Providers -> User Signups: turn **off "Confirm email"**. Leave the Phone provider OFF
    (it needs a paid SMS provider). The app signs people in with phone + password through a hidden address derived from the number.

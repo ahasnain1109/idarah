@@ -8,7 +8,7 @@
  * so the app loads instantly even with zero internet connectivity.
  */
 
-const CACHE_NAME = 'idarah-cache-v4';
+const CACHE_NAME = 'idarah-cache-v5';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -19,7 +19,11 @@ const ASSETS_TO_CACHE = [
   './platform-modules.js',
   './platform-core.js',
   './platform-onboarding.js',
+  './platform-ui.js',
   './platform-finance.js',
+  './platform-madarsa.js',
+  './platform-mosque.js',
+  './platform-reports.js',
   './platform-app.js',
   './manifest.json',
   './icon.svg'

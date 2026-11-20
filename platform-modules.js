@@ -153,6 +153,7 @@
     ['fitra_contribution', 'Fitra (Sadaqatul Fitr)'],
     ['sadaqah', 'Sadaqah'],
     ['nazr_niyaz', 'Nazr / Niyaz'],
+    ['student_fee', 'Madarsa Student Fee'],
     ['waqf_rent', 'Waqf Rent / Income'],
     ['other', 'Other']
   ];
@@ -202,16 +203,16 @@
     if (!field.showIf) return true;
     return values[field.showIf.key] === field.showIf.equals;
   };
-
   /**
-   * Validates one module form. Returns { ok, errors: {key: message}, clean: {module_name, details} }.
+   * Generic field validation (used by module forms AND the register/table forms).
+   * Field types: text | textarea | select | time | date | number | yesno | phone (10-digit Indian mobile)
+   * Returns { ok, errors: {key: message}, clean: {key: value} } (hidden conditional fields are skipped).
    */
-  P.validateModuleForm = function (type, values) {
-    const def = P.MODULE_DEFS[type];
+  P.validateFields = function (fields, values) {
     const errors = {};
-    const clean = { module_name: '', details: {} };
+    const clean = {};
 
-    def.fields.forEach(f => {
+    fields.forEach(f => {
       if (!P.fieldVisible(f, values)) return;
       let v = values[f.key];
       if (typeof v === 'string') v = v.trim();
@@ -222,11 +223,13 @@
         if (f.required) errors[f.key] = 'This field is required';
         return;
       }
-      if (f.type === 'text') {
+      if (f.type === 'text' || f.type === 'textarea') {
         if (f.key === 'module_name' && v.length < 2) { errors[f.key] = 'Enter at least 2 characters'; return; }
         if (f.maxLength && v.length > f.maxLength) { errors[f.key] = 'Too long (max ' + f.maxLength + ')'; return; }
         if (f.pattern && !new RegExp(f.pattern).test(v)) { errors[f.key] = f.patternHint || 'Invalid format'; return; }
       }
+      if (f.type === 'phone' && !P.PHONE_RE.test(v)) { errors[f.key] = 'Enter a valid 10-digit mobile number'; return; }
+      if (f.type === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(v)) { errors[f.key] = 'Choose a valid date'; return; }
       if (f.type === 'number') {
         const n = Number(v);
         if (!Number.isFinite(n) || (f.min !== undefined && n < f.min) || (f.max !== undefined && n > f.max)) {
@@ -241,10 +244,20 @@
       }
       if (f.type === 'time' && !/^([01]\d|2[0-3]):[0-5]\d$/.test(v)) { errors[f.key] = 'Enter a valid time'; return; }
 
-      if (f.key === 'module_name') clean.module_name = v;
-      else clean.details[f.key] = v;
+      clean[f.key] = v;
     });
 
     return { ok: Object.keys(errors).length === 0, errors, clean };
+  };
+
+  /**
+   * Validates one module form. Returns { ok, errors: {key: message}, clean: {module_name, details} }.
+   */
+  P.validateModuleForm = function (type, values) {
+    const res = P.validateFields(P.MODULE_DEFS[type].fields, values);
+    const details = Object.assign({}, res.clean);
+    const module_name = details.module_name || '';
+    delete details.module_name;
+    return { ok: res.ok, errors: res.errors, clean: { module_name, details } };
   };
 })();

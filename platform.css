@@ -30,6 +30,20 @@
 .pf-kv th { width: 40%; background: #f8fafc; font-weight: 600; }
 
 .pf-btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+/* tabs rendered as links (same look as the old button tabs) */
+a.nav-tab-btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+a.nav-tab-btn:focus-visible { outline: 3px solid rgba(4, 120, 87, 0.4); outline-offset: -3px; }
+/* link-style buttons need the same box as <button class="btn"> */
+a.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; cursor: pointer;
+  font-weight: 600; border-radius: var(--radius-md); border: 1px solid transparent; min-height: var(--touch-min-height); padding: 12px 18px;
+}
+a.btn.btn-sm { min-height: 38px; padding: 6px 12px; font-size: 0.875rem; border-radius: var(--radius-sm); }
+a.btn.btn-primary { background-color: var(--primary); color: #fff; }
+a.btn.btn-secondary { background-color: #fff; color: var(--primary); border-color: var(--primary); }
+a.btn.btn-outline { background-color: transparent; color: var(--text-main); border-color: var(--border-color); }
+a.btn.btn-whatsapp { background-color: #25d366; color: #fff; }
+.mosque-info-pill { flex-wrap: wrap; }
 .pf-subtabs { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border-subtle); }
 .pf-subtab {
   padding: 10px 16px; min-height: var(--touch-min-height); display: inline-flex; align-items: center;

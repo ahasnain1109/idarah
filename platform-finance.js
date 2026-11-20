@@ -16,30 +16,7 @@
 
   // ---- tiny accessible modal -------------------------------------------------
 
-  function openModal(title, bodyHtml) {
-    const previous = document.activeElement;
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay active';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', title);
-    overlay.innerHTML = '<div class="modal-dialog"><div class="modal-header"><h3 class="modal-title">' + esc(title) +
-      '</h3><button type="button" class="modal-close-btn pf-no-print" aria-label="Close">✕</button></div><div class="modal-body">' + bodyHtml + '</div></div>';
-    document.body.appendChild(overlay);
-
-    function close() {
-      document.removeEventListener('keydown', onKey);
-      overlay.remove();
-      if (previous && previous.focus && previous.isConnected) previous.focus();
-    }
-    function onKey(e) { if (e.key === 'Escape') close(); }
-    document.addEventListener('keydown', onKey);
-    overlay.querySelector('.modal-close-btn').addEventListener('click', close);
-    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-    const first = overlay.querySelector('input, select, textarea, button.btn');
-    if (first) first.focus();
-    return { el: overlay, close };
-  }
+  const openModal = P.openModal;   // shared accessible modal (platform-ui.js)
 
   const opt = (list, selected) => list.map(c => '<option value="' + esc(c[0]) + '"' + (c[0] === selected ? ' selected' : '') + '>' + esc(c[1]) + '</option>').join('');
   const istDate = iso => (typeof window.getISTTimestamp === 'function' ? window.getISTTimestamp(new Date(iso)) : iso);
@@ -52,6 +29,9 @@
    * host: element to render into; mod: organization_modules row;
    * ctx: { committee: {id,name}, canWrite: boolean }
    */
+  // exposed so other screens (e.g. fee collection) can show the same official receipt
+  P.showReceipt = (e, mod, ctx, fund) => receiptModal(e, mod, ctx, fund);
+
   P.renderFinance = async function (host, mod, ctx) {
     host.innerHTML = '<div class="card pf-center" aria-busy="true"><div class="pf-spinner"></div><p>Loading finance…</p></div>';
 

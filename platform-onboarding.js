@@ -16,8 +16,12 @@
   // ---- shared field rendering (also used by the module settings editor) ------
 
   P.renderFields = function (type, values, errors, prefix) {
-    const def = P.MODULE_DEFS[type];
-    return def.fields.filter(f => P.fieldVisible(f, values)).map(f => {
+    return P.renderFieldList(P.MODULE_DEFS[type].fields, values, errors, prefix);
+  };
+
+  /** Renders any list of field specs (see P.validateFields for the types). */
+  P.renderFieldList = function (fields, values, errors, prefix) {
+    return fields.filter(f => P.fieldVisible(f, values)).map(f => {
       const id = prefix + '-' + f.key;
       const err = errors && errors[f.key];
       const val = values[f.key];
@@ -36,9 +40,14 @@
           '<label><input type="radio" name="' + id + '" value="yes" data-key="' + f.key + '"' + (yes ? ' checked' : '') + ' /> Yes</label>' +
           '<label><input type="radio" name="' + id + '" value="no" data-key="' + f.key + '"' + (no ? ' checked' : '') + ' /> No</label>' +
           '</div>';
+      } else if (f.type === 'textarea') {
+        control = '<textarea id="' + id + '" class="form-control" data-key="' + f.key + '"' +
+          (f.maxLength ? ' maxlength="' + f.maxLength + '"' : '') + (f.placeholder ? ' placeholder="' + esc(f.placeholder) + '"' : '') +
+          (f.required ? ' required' : '') + '>' + esc(val === undefined || val === null ? '' : val) + '</textarea>';
       } else {
-        const t = f.type === 'number' ? 'number' : (f.type === 'time' ? 'time' : 'text');
+        const t = f.type === 'number' ? 'number' : f.type === 'time' ? 'time' : f.type === 'date' ? 'date' : f.type === 'phone' ? 'tel' : 'text';
         control = '<input id="' + id + '" class="form-control" data-key="' + f.key + '" type="' + t + '"' +
+          (f.type === 'phone' ? ' inputmode="numeric" maxlength="10"' : '') +
           (f.type === 'number' ? ' inputmode="numeric"' + (f.min !== undefined ? ' min="' + f.min + '"' : '') + (f.max !== undefined ? ' max="' + f.max + '"' : '') : '') +
           (f.maxLength ? ' maxlength="' + f.maxLength + '"' : '') +
           (f.placeholder ? ' placeholder="' + esc(f.placeholder) + '"' : '') +
@@ -55,8 +64,12 @@
   };
 
   P.readFields = function (type, root) {
+    return P.readFieldList(P.MODULE_DEFS[type].fields, root);
+  };
+
+  P.readFieldList = function (fields, root) {
     const values = {};
-    P.MODULE_DEFS[type].fields.forEach(f => {
+    fields.forEach(f => {
       if (f.type === 'yesno') {
         const checked = root.querySelector('input[type="radio"][data-key="' + f.key + '"]:checked');
         if (checked) values[f.key] = checked.value;

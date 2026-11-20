@@ -215,6 +215,55 @@
       return guarded(async () => unwrap(await P.client().rpc('verify_module_ledger', { target_module_id: moduleId })));
     },
 
+    // ---- generic table access (security is enforced by RLS, not here) ----
+    async listRows(table, { moduleId, committeeId, select, order, ascending, limit, eq } = {}) {
+      return guarded(async () => {
+        let q = P.client().from(table).select(select || '*');
+        if (moduleId) q = q.eq('module_id', moduleId);
+        if (committeeId) q = q.eq('committee_id', committeeId);
+        Object.entries(eq || {}).forEach(([k, v]) => { q = q.eq(k, v); });
+        if (order) q = q.order(order, { ascending: ascending !== false });
+        if (limit) q = q.limit(limit);
+        return unwrap(await q) || [];
+      });
+    },
+
+    async insertRow(table, row) {
+      return guarded(async () => unwrap(await P.client().from(table).insert(row).select().single()));
+    },
+
+    async updateRow(table, id, patch) {
+      return guarded(async () => {
+        const rows = unwrap(await P.client().from(table).update(patch).eq('id', id).select());
+        if (!rows || !rows.length) throw new Error('You do not have permission to change this record.');
+        return rows[0];
+      });
+    },
+
+    async deleteRow(table, id) {
+      return guarded(async () => {
+        const rows = unwrap(await P.client().from(table).delete().eq('id', id).select('id'));
+        if (!rows || !rows.length) throw new Error('You do not have permission to delete this record.');
+      });
+    },
+
+    async upsertRows(table, rows, onConflict) {
+      return guarded(async () => unwrap(await P.client().from(table).upsert(rows, { onConflict }).select()));
+    },
+
+    // ---- atomic money helpers (ledger entry + payment record in one database call) ----
+    async collectFee(studentId, month, amount, paymentMode) {
+      return guarded(async () => unwrap(await P.client().rpc('collect_student_fee', {
+        p_student_id: studentId, p_month: month, p_amount: amount, p_payment_mode: paymentMode
+      })));
+    },
+
+    async paySalary(teacherId, month, amount) {
+      return guarded(async () => unwrap(await P.client().rpc('pay_staff_salary', {
+        p_teacher_id: teacherId, p_month: month, p_amount: amount
+      })));
+    },
+
     async listMembers(committeeId) {
       return guarded(async () => {
         const sb = P.client();
