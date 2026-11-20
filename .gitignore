@@ -25,3 +25,4 @@ node_modules/
 
 # Netlify CLI link
 .netlify/
+build-id.js

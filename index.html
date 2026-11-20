@@ -82,9 +82,26 @@
   <!-- Service Worker Registration for PWA Installation on Android & iOS -->
   <script>
     if ('serviceWorker' in navigator) {
+      // A new deploy installs a new service worker. When it takes over, reload so the newest
+      // code runs. Never reload in the middle of a form (a pop-up is open): wait until it closes.
+      const hadController = !!navigator.serviceWorker.controller;
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || reloading) return;
+        const tryReload = () => {
+          if (document.querySelector('.modal-overlay')) { setTimeout(tryReload, 4000); return; }
+          reloading = true;
+          location.reload();
+        };
+        tryReload();
+      });
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then((reg) => console.log('Idarah Service Worker registered with scope:', reg.scope))
+          .then((reg) => {
+            console.log('Idarah Service Worker registered with scope:', reg.scope);
+            // look for a new version every time the app comes back to the foreground
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+          })
           .catch((err) => console.warn('Service Worker registration failed:', err));
       });
     }

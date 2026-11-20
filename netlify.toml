@@ -5,6 +5,11 @@
   command = "node scripts/generate-config.js"
 
 [[headers]]
+  for = "/build-id.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
   for = "/supabase-config.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"

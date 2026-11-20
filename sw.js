@@ -8,7 +8,10 @@
  * so the app loads instantly even with zero internet connectivity.
  */
 
-const CACHE_NAME = 'idarah-cache-v5';
+// build-id.js is generated on every deploy (scripts/generate-config.js). A new deploy changes it,
+// so the browser sees a new service worker, replaces the old cache and tells open pages to reload.
+try { importScripts('./build-id.js'); } catch (e) { /* local dev without a build: fine */ }
+const CACHE_NAME = 'idarah-cache-' + (self.BUILD_ID || 'dev');
 
 const ASSETS_TO_CACHE = [
   './',
