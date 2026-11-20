@@ -1,0 +1,13 @@
+{
+  "name": "idarah-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:db": "node rls-test.mjs ../supabase/migrations/001_modular_committees_rls.sql ../supabase/migrations/002_finance_tamper_evident_ledger.sql ../supabase/migrations/003_madarsa_mosque_ops.sql",
+    "test:ui": "node ui-test.mjs .."
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.2.17",
+    "jsdom": "^25.0.0"
+  }
+}
