@@ -595,5 +595,11 @@ window.I18N_DICT.kn = {
   'Zakat Contribution': 'ಝಕಾತ್ ದೇಣಿಗೆ',
   'All Modules': 'ಎಲ್ಲಾ ಮಾಡ್ಯೂಲ್‌ಗಳು',
   'The server rejected the sign-up address. Please contact support.': 'ಸರ್ವರ್ ಸೈನ್ ಅಪ್ ವಿಳಾಸವನ್ನು ಒಪ್ಪಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಸಹಾಯವಾಣಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.',
-  'The database library could not be loaded. Check your internet connection and refresh.': 'ಡೇಟಾಬೇಸ್ ಲೈಬ್ರರಿ ಲೋಡ್ ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ.'
+  'The database library could not be loaded. Check your internet connection and refresh.': 'ಡೇಟಾಬೇಸ್ ಲೈಬ್ರರಿ ಲೋಡ್ ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ.',
+  'Close': 'ಮುಚ್ಚಿ',
+  'Delete': 'ಅಳಿಸಿ',
+  'Workspace': 'ಕಾರ್ಯಕ್ಷೇತ್ರ',
+  'Month': 'ತಿಂಗಳು',
+  'e.g. Ramadan Iftar Fund, Masjid Expansion': 'ಉದಾ. ರಂಜಾನ್ ಇಫ್ತಾರ್ ನಿಧಿ, ಮಸೀದಿ ವಿಸ್ತರಣೆ',
+  'e.g. {}': 'ಉದಾ. {}'
 };

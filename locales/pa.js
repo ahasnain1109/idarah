@@ -595,5 +595,11 @@ window.I18N_DICT.pa = {
   'Zakat Contribution': 'ਜ਼ਕਾਤ ਯੋਗਦਾਨ',
   'All Modules': 'ਸਾਰੇ ਮਾਡਿਊਲ',
   'The server rejected the sign-up address. Please contact support.': 'ਸਰਵਰ ਨੇ ਸਾਈਨ-ਅੱਪ ਦਾ ਪਤਾ ਪ੍ਰਵਾਨ ਨਹੀਂ ਕੀਤਾ। ਕਿਰਪਾ ਕਰਕੇ ਸਹਾਇਤਾ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।',
-  'The database library could not be loaded. Check your internet connection and refresh.': 'ਡੇਟਾਬੇਸ ਲਾਇਬ੍ਰੇਰੀ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕੀ। ਆਪਣਾ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਅਤੇ ਪੰਨਾ ਰੀਫ੍ਰੈਸ਼ ਕਰੋ।'
+  'The database library could not be loaded. Check your internet connection and refresh.': 'ਡੇਟਾਬੇਸ ਲਾਇਬ੍ਰੇਰੀ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕੀ। ਆਪਣਾ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਅਤੇ ਪੰਨਾ ਰੀਫ੍ਰੈਸ਼ ਕਰੋ।',
+  'Close': 'ਬੰਦ ਕਰੋ',
+  'Delete': 'ਹਟਾਓ',
+  'Workspace': 'ਕਾਰਜ ਖੇਤਰ',
+  'Month': 'ਮਹੀਨਾ',
+  'e.g. Ramadan Iftar Fund, Masjid Expansion': 'ਜਿਵੇਂ ਰਮਜ਼ਾਨ ਇਫ਼ਤਾਰ ਫ਼ੰਡ, ਮਸਜਿਦ ਵਿਸਥਾਰ',
+  'e.g. {}': 'ਜਿਵੇਂ {}'
 };

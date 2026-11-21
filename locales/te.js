@@ -595,5 +595,11 @@ window.I18N_DICT.te = {
   'Zakat Contribution': 'జకాత్ విరాళం',
   'All Modules': 'అన్ని మాడ్యూళ్లు',
   'The server rejected the sign-up address. Please contact support.': 'సర్వర్ సైన్-అప్ చిరునామాను అంగీకరించలేదు. దయచేసి సహాయ విభాగాన్ని సంప్రదించండి.',
-  'The database library could not be loaded. Check your internet connection and refresh.': 'డేటాబేస్ లైబ్రరీ లోడ్ కాలేదు. మీ ఇంటర్నెట్ కనెక్షన్ చూసి పేజీని రిఫ్రెష్ చేయండి.'
+  'The database library could not be loaded. Check your internet connection and refresh.': 'డేటాబేస్ లైబ్రరీ లోడ్ కాలేదు. మీ ఇంటర్నెట్ కనెక్షన్ చూసి పేజీని రిఫ్రెష్ చేయండి.',
+  'Close': 'మూసివేయండి',
+  'Delete': 'తొలగించండి',
+  'Workspace': 'పనిస్థలం',
+  'Month': 'నెల',
+  'e.g. Ramadan Iftar Fund, Masjid Expansion': 'ఉదా. రంజాన్ ఇఫ్తార్ ఫండ్, మసీదు విస్తరణ',
+  'e.g. {}': 'ఉదా. {}'
 };

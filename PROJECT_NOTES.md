@@ -37,7 +37,7 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 
 ## Left to do
 - Public page to check a receipt without logging in
-- Have native speakers proofread every file in `locales/`. `ks.js` is mostly Urdu wording and needs a Kashmiri speaker most. All 13 non-English lists were written by Claude (about 595 lines each) and none is checked by a native speaker yet. If new English text is added to a screen, add it to every list in `locales/`
+- Have native speakers proofread every file in `locales/`. `ks.js` is mostly Urdu wording and needs a Kashmiri speaker most. All 13 non-English lists have 601 keys each and none is checked by a native speaker yet. If new English text is added to a screen, add it to every list in `locales/`
 - OTP (SMS) login, so nobody can sign up with someone else's number
 - Automatic database updates (SQL is pasted by hand today)
 - Bill photo upload for expenses
@@ -67,7 +67,8 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 
 ## Rules
 - I am not a coder. Explain in simple words, one step at a time.
-- Read PROJECT_NOTES.md at the start of every new thread.
+- Read PROJECT_NOTES.md at the start of every new thread, then CLAUDE.md, AGENTS.md and GEMINI.md (all agents read all of them).
+- Three rule files must always say the same thing: `CLAUDE.md` (Claude), `AGENTS.md` (Codex), `GEMINI.md` (Gemini). Every agent must read all three, plus PROJECT_NOTES.md, at the start of every chat. When a rule is added or changed, update all three files, not just your own.
 - Work on one task at a time. Change only what I ask. Do not touch anything else.
 - Before writing code for a big task, show me a short plan and wait for my approval.
 - When editing, change only the lines that need changing. Do not rewrite whole files.

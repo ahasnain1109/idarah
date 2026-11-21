@@ -595,5 +595,11 @@ window.I18N_DICT.ta = {
   'Zakat Contribution': 'ஜகாத் பங்களிப்பு',
   'All Modules': 'எல்லா தொகுதிகளும்',
   'The server rejected the sign-up address. Please contact support.': 'சர்வர் பதிவு முகவரியை ஏற்கவில்லை. தயவுசெய்து ஆதரவைத் தொடர்பு கொள்ளவும்.',
-  'The database library could not be loaded. Check your internet connection and refresh.': 'தரவுத்தள நூலகத்தை ஏற்ற முடியவில்லை. இணைய இணைப்பைச் சரிபார்த்து பக்கத்தை புதுப்பிக்கவும்.'
+  'The database library could not be loaded. Check your internet connection and refresh.': 'தரவுத்தள நூலகத்தை ஏற்ற முடியவில்லை. இணைய இணைப்பைச் சரிபார்த்து பக்கத்தை புதுப்பிக்கவும்.',
+  'Close': 'மூடு',
+  'Delete': 'நீக்கு',
+  'Workspace': 'பணியிடம்',
+  'Month': 'மாதம்',
+  'e.g. Ramadan Iftar Fund, Masjid Expansion': 'எ.கா. ரமழான் இஃப்தார் நிதி, பள்ளிவாசல் விரிவாக்கம்',
+  'e.g. {}': 'எ.கா. {}'
 };

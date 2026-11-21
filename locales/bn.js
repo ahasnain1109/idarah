@@ -595,5 +595,11 @@ window.I18N_DICT.bn = {
   'Zakat Contribution': 'যাকাত অনুদান',
   'All Modules': 'সব মডিউল',
   'The server rejected the sign-up address. Please contact support.': 'সার্ভার সাইন-আপের ঠিকানা গ্রহণ করেনি। অনুগ্রহ করে সহায়তার সাথে যোগাযোগ করুন।',
-  'The database library could not be loaded. Check your internet connection and refresh.': 'ডেটাবেস লাইব্রেরি লোড করা যায়নি। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং রিফ্রেশ করুন।'
+  'The database library could not be loaded. Check your internet connection and refresh.': 'ডেটাবেস লাইব্রেরি লোড করা যায়নি। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং রিফ্রেশ করুন।',
+  'Close': 'বন্ধ করুন',
+  'Delete': 'মুছুন',
+  'Workspace': 'কর্মক্ষেত্র',
+  'Month': 'মাস',
+  'e.g. Ramadan Iftar Fund, Masjid Expansion': 'যেমন: রমজান ইফতার তহবিল, মসজিদ সম্প্রসারণ',
+  'e.g. {}': 'যেমন: {}'
 };

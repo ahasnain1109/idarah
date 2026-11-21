@@ -595,5 +595,11 @@ window.I18N_DICT.ml = {
   'Zakat Contribution': 'സകാത്ത് സംഭാവന',
   'All Modules': 'എല്ലാ മൊഡ്യൂളുകളും',
   'The server rejected the sign-up address. Please contact support.': 'സെർവർ സൈൻ അപ്പ് വിലാസം സ്വീകരിച്ചില്ല. ദയവായി സപ്പോർട്ടുമായി ബന്ധപ്പെടുക.',
-  'The database library could not be loaded. Check your internet connection and refresh.': 'ഡാറ്റാബേസ് ലൈബ്രറി ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല. ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിച്ച് പേജ് റിഫ്രഷ് ചെയ്യുക.'
+  'The database library could not be loaded. Check your internet connection and refresh.': 'ഡാറ്റാബേസ് ലൈബ്രറി ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല. ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിച്ച് പേജ് റിഫ്രഷ് ചെയ്യുക.',
+  'Close': 'അടയ്ക്കുക',
+  'Delete': 'ഇല്ലാതാക്കുക',
+  'Workspace': 'വർക്ക് സ്പേസ്',
+  'Month': 'മാസം',
+  'e.g. Ramadan Iftar Fund, Masjid Expansion': 'ഉദാ. റമദാൻ ഇഫ്താർ ഫണ്ട്, മസ്ജിദ് വികസനം',
+  'e.g. {}': 'ഉദാ. {}'
 };
