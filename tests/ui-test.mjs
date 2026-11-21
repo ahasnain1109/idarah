@@ -566,7 +566,7 @@ console.log('\n== language switcher ==');
   ok('Gujarati: text changes, left-to-right', /[઀-૿]/.test(d.body.textContent) && d.documentElement.getAttribute('dir') === 'ltr');
   for (const l of ['ml', 'ta', 'te', 'kn', 'mr', 'as', 'or', 'pa']) {
     setVal(w, d.querySelector('select.pf-lang'), l); await tick();
-    ok(l + ': works with no missing-text errors (falls back to English), left-to-right', /Welcome to Idarah/.test(d.body.textContent) && d.documentElement.getAttribute('lang') === l && d.documentElement.getAttribute('dir') === 'ltr');
+    ok(l + ': text is translated into its own script, left-to-right', !/Welcome to Idarah/.test(d.body.textContent) && /[^ -]{5}/.test(d.querySelector('h2').textContent) && d.documentElement.getAttribute('lang') === l && d.documentElement.getAttribute('dir') === 'ltr');
   }
   setVal(w, d.querySelector('select.pf-lang'), 'en'); await tick();
   ok('back to English restores the original text', /Create Account/.test(d.body.textContent) && d.documentElement.getAttribute('dir') === 'ltr');

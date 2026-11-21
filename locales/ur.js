@@ -589,5 +589,11 @@ window.I18N_DICT.ur = {
   'Tripura': 'تریپورہ',
   'Uttar Pradesh': 'اتر پردیش',
   'Uttarakhand': 'اتراکھنڈ',
-  'West Bengal': 'مغربی بنگال'
+  'West Bengal': 'مغربی بنگال',
+  'Saved.': 'محفوظ ہو گیا۔',
+  'Deleted.': 'حذف کر دیا گیا۔',
+  'Zakat Contribution': 'زکوٰۃ کا عطیہ',
+  'All Modules': 'تمام ماڈیولز',
+  'The server rejected the sign-up address. Please contact support.': 'سرور نے سائن اپ کا پتہ قبول نہیں کیا۔ براہِ کرم سپورٹ سے رابطہ کریں۔',
+  'The database library could not be loaded. Check your internet connection and refresh.': 'ڈیٹا بیس لائبریری لوڈ نہیں ہو سکی۔ اپنا انٹرنیٹ کنکشن چیک کریں اور ریفریش کریں۔'
 };

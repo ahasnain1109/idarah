@@ -589,5 +589,11 @@ window.I18N_DICT.hi = {
   'Tripura': 'त्रिपुरा',
   'Uttar Pradesh': 'उत्तर प्रदेश',
   'Uttarakhand': 'उत्तराखंड',
-  'West Bengal': 'पश्चिम बंगाल'
+  'West Bengal': 'पश्चिम बंगाल',
+  'Saved.': 'सहेजा गया।',
+  'Deleted.': 'हटा दिया गया।',
+  'Zakat Contribution': 'ज़कात योगदान',
+  'All Modules': 'सभी मॉड्यूल',
+  'The server rejected the sign-up address. Please contact support.': 'सर्वर ने साइन-अप का पता स्वीकार नहीं किया। कृपया सहायता से संपर्क करें।',
+  'The database library could not be loaded. Check your internet connection and refresh.': 'डेटाबेस लाइब्रेरी लोड नहीं हो सकी। अपना इंटरनेट कनेक्शन जाँचें और पेज रीफ़्रेश करें।'
 };

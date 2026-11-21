@@ -37,7 +37,7 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 
 ## Left to do
 - Public page to check a receipt without logging in
-- Have native speakers proofread `locales/hi.js`, `bn.js`, `ur.js`, `gu.js`, `ks.js` (written by Claude, about 590 lines each). `ks.js` is mostly Urdu wording and needs a Kashmiri speaker most. Translate the 8 empty lists (`ml ta te kn mr as or pa`); until then they show English. Add any English text that still shows untranslated
+- Have native speakers proofread every file in `locales/`. `ks.js` is mostly Urdu wording and needs a Kashmiri speaker most. All 13 non-English lists were written by Claude (about 595 lines each) and none is checked by a native speaker yet. If new English text is added to a screen, add it to every list in `locales/`
 - OTP (SMS) login, so nobody can sign up with someone else's number
 - Automatic database updates (SQL is pasted by hand today)
 - Bill photo upload for expenses
@@ -76,3 +76,4 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 - Open only the files needed for the task. Do not scan the whole project.
 - If you hit the same error twice, stop and tell me. Do not keep retrying.
 - When a task is finished, update PROJECT_NOTES.md.
+- Every new screen, button or message must work in all 14 languages: add its English text to every file in `locales/` (same line in all), keep layouts working left-to-right and right-to-left (Urdu, Kashmiri), and test it in more than one language.

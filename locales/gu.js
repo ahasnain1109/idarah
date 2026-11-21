@@ -589,5 +589,11 @@ window.I18N_DICT.gu = {
   'Tripura': 'ત્રિપુરા',
   'Uttar Pradesh': 'ઉત્તર પ્રદેશ',
   'Uttarakhand': 'ઉત્તરાખંડ',
-  'West Bengal': 'પશ્ચિમ બંગાળ'
+  'West Bengal': 'પશ્ચિમ બંગાળ',
+  'Saved.': 'સાચવ્યું.',
+  'Deleted.': 'કાઢી નાખ્યું.',
+  'Zakat Contribution': 'ઝકાત દાન',
+  'All Modules': 'બધા મોડ્યુલ',
+  'The server rejected the sign-up address. Please contact support.': 'સર્વરે સાઇન-અપ સરનામું સ્વીકાર્યું નહીં. કૃપા કરીને સહાયનો સંપર્ક કરો.',
+  'The database library could not be loaded. Check your internet connection and refresh.': 'ડેટાબેઝ લાઇબ્રેરી લોડ થઈ શકી નથી. તમારું ઇન્ટરનેટ કનેક્શન તપાસો અને રિફ્રેશ કરો.'
 };
