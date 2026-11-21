@@ -601,5 +601,8 @@ window.I18N_DICT.ml = {
   'Workspace': 'വർക്ക് സ്പേസ്',
   'Month': 'മാസം',
   'e.g. Ramadan Iftar Fund, Masjid Expansion': 'ഉദാ. റമദാൻ ഇഫ്താർ ഫണ്ട്, മസ്ജിദ് വികസനം',
-  'e.g. {}': 'ഉദാ. {}'
+  'e.g. {}': 'ഉദാ. {}',
+  'Zakat': 'സകാത്ത്',
+  'Fitra (Zakat al-Fitr)': 'ഫിത്ർ (സദഖത്തുൽ ഫിത്ർ)',
+  '{} (Zakat-restricted)': '{} (സകാത്ത്-പരിമിതം)'
 };

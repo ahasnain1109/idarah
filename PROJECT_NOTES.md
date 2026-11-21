@@ -65,10 +65,11 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 - Never use or ask for the Supabase secret / service_role key. Only the publishable key is used (set on Netlify).
 - Windows PowerShell adds a hidden BOM to files saved with `Set-Content -Encoding utf8`; write files with the Write tool or .NET UTF8 without BOM. Put git commit messages in a file and use `git commit -F`.
 
+- The database creates default funds named `General Fund`, `Sadaqah`, `Zakat`, `Fitra (Zakat al-Fitr)` (SQL 002). These exact names must stay as lines in every `locales/` file so they show in each language.
+
 ## Rules
 - I am not a coder. Explain in simple words, one step at a time.
-- Read PROJECT_NOTES.md at the start of every new thread, then CLAUDE.md, AGENTS.md and GEMINI.md (all agents read all of them).
-- Three rule files must always say the same thing: `CLAUDE.md` (Claude), `AGENTS.md` (Codex), `GEMINI.md` (Gemini). Every agent must read all three, plus PROJECT_NOTES.md, at the start of every chat. When a rule is added or changed, update all three files, not just your own.
+- Read PROJECT_NOTES.md at the start of every new thread.
 - Work on one task at a time. Change only what I ask. Do not touch anything else.
 - Before writing code for a big task, show me a short plan and wait for my approval.
 - When editing, change only the lines that need changing. Do not rewrite whole files.

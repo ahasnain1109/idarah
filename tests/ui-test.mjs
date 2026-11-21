@@ -582,11 +582,13 @@ console.log('\n== language switcher ==');
 
   ok('language names in the dropdown never get translated', Array.from(d.querySelectorAll('select.pf-lang option')).map(o => o.textContent).join() === 'English,हिन्दी (Hindi),اردو (Urdu),বাংলা (Bengali),ગુજરાતી (Gujarati),کٲشُر (Kashmiri),മലയാളം (Malayalam),தமிழ் (Tamil),తెలుగు (Telugu),ಕನ್ನಡ (Kannada),मराठी (Marathi),অসমীয়া (Assamese),ଓଡ଼ିଆ (Odia),ਪੰਜਾਬੀ (Punjabi)');
   setVal(w, d.querySelector('select.pf-lang'), 'ur'); await tick();
-  const sample = d.createElement('div'); sample.innerHTML = '<p>Step 2 of 3: Dargah</p><p>Donation recorded: RCP-0001</p><p>Not enough money in General Fund. Available: ₹10.</p><p>Some user typed note</p>'; d.body.appendChild(sample); await tick();
+  const sample = d.createElement('div'); sample.innerHTML = '<p>Step 2 of 3: Dargah</p><p>Donation recorded: RCP-0001</p><p>Not enough money in General Fund. Available: ₹10.</p><p>Some user typed note</p><p>Zakat</p><p>Fitra (Zakat al-Fitr)</p><p>My Fund (Zakat-restricted)</p>'; d.body.appendChild(sample); await tick();
   const ps = Array.from(sample.querySelectorAll('p')).map(p => p.textContent);
   ok('patterns keep the changing part (Step 2 of 3)', ps[0] === 'مرحلہ 2 / 3: درگاہ', ps[0]);
   ok('patterns keep the receipt number', ps[1] === 'عطیہ درج ہو گیا: RCP-0001', ps[1]);
   ok('text typed by users that is not in the list is left alone', ps[3] === 'Some user typed note');
+  ok('default fund names Zakat and Fitra are translated', ps[4] === 'زکوٰۃ' && ps[5] === 'فطرہ (صدقۃ الفطر)', ps[4] + ' | ' + ps[5]);
+  ok('(Zakat-restricted) after a fund name is translated, fund name kept', ps[6] === 'My Fund (زکوٰۃ تک محدود)', ps[6]);
 }
 
 

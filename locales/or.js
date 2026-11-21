@@ -601,5 +601,8 @@ window.I18N_DICT.or = {
   'Workspace': 'କାର୍ଯ୍ୟକ୍ଷେତ୍ର',
   'Month': 'ମାସ',
   'e.g. Ramadan Iftar Fund, Masjid Expansion': 'ଯଥା: ରମଜାନ୍ ଇଫ୍ତାର୍ ପାଣ୍ଠି, ମସଜିଦ୍ ସମ୍ପ୍ରସାରଣ',
-  'e.g. {}': 'ଯଥା: {}'
+  'e.g. {}': 'ଯଥା: {}',
+  'Zakat': 'ଜକାତ',
+  'Fitra (Zakat al-Fitr)': 'ଫିତ୍ରା (ସଦକତୁଲ୍ ଫିତ୍ର)',
+  '{} (Zakat-restricted)': '{} (ଜକାତ-ସୀମିତ)'
 };

@@ -601,5 +601,8 @@ window.I18N_DICT.ur = {
   'Workspace': 'ورک اسپیس',
   'Month': 'مہینہ',
   'e.g. Ramadan Iftar Fund, Masjid Expansion': 'مثلاً رمضان افطار فنڈ، مسجد کی توسیع',
-  'e.g. {}': 'مثلاً {}'
+  'e.g. {}': 'مثلاً {}',
+  'Zakat': 'زکوٰۃ',
+  'Fitra (Zakat al-Fitr)': 'فطرہ (صدقۃ الفطر)',
+  '{} (Zakat-restricted)': '{} (زکوٰۃ تک محدود)'
 };

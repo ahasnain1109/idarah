@@ -601,5 +601,8 @@ window.I18N_DICT.te = {
   'Workspace': 'పనిస్థలం',
   'Month': 'నెల',
   'e.g. Ramadan Iftar Fund, Masjid Expansion': 'ఉదా. రంజాన్ ఇఫ్తార్ ఫండ్, మసీదు విస్తరణ',
-  'e.g. {}': 'ఉదా. {}'
+  'e.g. {}': 'ఉదా. {}',
+  'Zakat': 'జకాత్',
+  'Fitra (Zakat al-Fitr)': 'ఫిత్రా (సదకతుల్ ఫిత్ర్)',
+  '{} (Zakat-restricted)': '{} (జకాత్‌కు పరిమితం)'
 };

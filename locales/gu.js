@@ -601,5 +601,8 @@ window.I18N_DICT.gu = {
   'Workspace': 'કાર્યક્ષેત્ર',
   'Month': 'મહિનો',
   'e.g. Ramadan Iftar Fund, Masjid Expansion': 'દા.ત. રમઝાન ઇફ્તાર ફંડ, મસ્જિદ વિસ્તરણ',
-  'e.g. {}': 'દા.ત. {}'
+  'e.g. {}': 'દા.ત. {}',
+  'Zakat': 'ઝકાત',
+  'Fitra (Zakat al-Fitr)': 'ફિત્રા (સદકતુલ ફિત્ર)',
+  '{} (Zakat-restricted)': '{} (ઝકાત-મર્યાદિત)'
 };

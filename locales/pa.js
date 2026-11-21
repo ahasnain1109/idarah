@@ -601,5 +601,8 @@ window.I18N_DICT.pa = {
   'Workspace': 'ਕਾਰਜ ਖੇਤਰ',
   'Month': 'ਮਹੀਨਾ',
   'e.g. Ramadan Iftar Fund, Masjid Expansion': 'ਜਿਵੇਂ ਰਮਜ਼ਾਨ ਇਫ਼ਤਾਰ ਫ਼ੰਡ, ਮਸਜਿਦ ਵਿਸਥਾਰ',
-  'e.g. {}': 'ਜਿਵੇਂ {}'
+  'e.g. {}': 'ਜਿਵੇਂ {}',
+  'Zakat': 'ਜ਼ਕਾਤ',
+  'Fitra (Zakat al-Fitr)': 'ਫ਼ਿਤਰਾ (ਸਦਕ਼ਤੁਲ ਫ਼ਿਤਰ)',
+  '{} (Zakat-restricted)': '{} (ਜ਼ਕਾਤ-ਸੀਮਤ)'
 };
