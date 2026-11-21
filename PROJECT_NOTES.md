@@ -7,10 +7,10 @@ One login (mobile number + password) works for many committees. A committee can 
 Money is kept in a ledger that cannot be edited or deleted, and any tampering is detected.
 
 ## Where things are
-- Project folder: `C:\Users\Syeda\OneDrive\Desktop\idarah-repo`
+- Project folder: `C:\Users\Syeda\OneDrive\Desktop\My Projects\Islamic Organisation Management App\idarah-repo`
 - GitHub: `ahasnain1109/idarah` (the `main` branch is the live app)
 - Live site and installed phone app: https://idarah-h12r.netlify.app (updates by itself after every push to `main`)
-- Database: Supabase project `jsvvkxomdpgnfbgnhjyd`. SQL files are in `supabase/migrations/` (001, 002, 003 - all already run)
+- Database: Supabase project `jsvvkxomdpgnfbgnhjyd`. SQL files are in `supabase/migrations/` (001, 002, 003 already run; 004 must be run by the user)
 
 ## Tech used
 - Plain HTML, JavaScript and CSS (no build tool), installable phone app (PWA)
@@ -18,7 +18,7 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 - Tests in the `tests` folder (npm)
 
 ## Built so far (live)
-- Language dropdown (English, Hindi, Bengali, Urdu) in the header next to Log out and on the login screen; Urdu turns the page right-to-left; choice is remembered
+- Language dropdown with 14 languages (English, Hindi, Urdu, Bengali, Gujarati, Kashmiri, Malayalam, Tamil, Telugu, Kannada, Marathi, Assamese, Odia, Punjabi) in the header next to Log out and on the login screen; Urdu and Kashmiri turn the page right-to-left (Nastaliq font); choice is remembered on the phone and on the user's profile (`preferred_language`, SQL 004)
 - Login and sign up with a +91 mobile number and password (no OTP yet)
 - Setup wizard: pick modules, fill one short form per module; "Onboard Another Module" later
 - Committee switcher; only onboarded modules are shown
@@ -37,18 +37,18 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 
 ## Left to do
 - Public page to check a receipt without logging in
-- Have a Hindi, Bengali and Urdu speaker proofread `i18n-hi.js`, `i18n-bn.js`, `i18n-ur.js` (written by Claude, about 590 lines each); add any English text that still shows untranslated
+- Have native speakers proofread `locales/hi.js`, `bn.js`, `ur.js`, `gu.js`, `ks.js` (written by Claude, about 590 lines each). `ks.js` is mostly Urdu wording and needs a Kashmiri speaker most. Translate the 8 empty lists (`ml ta te kn mr as or pa`); until then they show English. Add any English text that still shows untranslated
 - OTP (SMS) login, so nobody can sign up with someone else's number
 - Automatic database updates (SQL is pasted by hand today)
 - Bill photo upload for expenses
 - Bring old data from the first app (it lives in each phone's browser) if needed
 
 ## How the code is organised (for Claude)
-- No build tool. `index.html` loads plain scripts in this order: `config.js` (helpers), `i18n-*.js` + `i18n.js` (language switcher: swaps English text found on the page using the word lists), Supabase library (CDN), `supabase-config.js` (generated), `platform-modules.js` (module forms, categories, validation), `platform-core.js` (login, data calls), `platform-onboarding.js` (wizard + form drawing), `platform-ui.js` (pop-up, generic register screen, section registry), `platform-finance.js`, `platform-madarsa.js`, `platform-mosque.js` (also dargah/imambargah/waqf screens), `platform-reports.js`, `platform-app.js` (login screens, header, tabs, dashboard, settings).
+- No build tool. `index.html` loads plain scripts in this order: `config.js` (helpers), `i18n.js` (language switcher: swaps English text found on the page using the word lists in `locales/xx.js`, each loaded only when that language is chosen), Supabase library (CDN), `supabase-config.js` (generated), `platform-modules.js` (module forms, categories, validation), `platform-core.js` (login, data calls), `platform-onboarding.js` (wizard + form drawing), `platform-ui.js` (pop-up, generic register screen, section registry), `platform-finance.js`, `platform-madarsa.js`, `platform-mosque.js` (also dargah/imambargah/waqf screens), `platform-reports.js`, `platform-app.js` (login screens, header, tabs, dashboard, settings).
 - Styles: `style.css` (old look, still used) and `platform.css` (new parts).
 - Each module type lists its screens with `P.registerSections(type, [...])`; buttons are hidden by role in the app, but the database (Row Level Security) is what really protects data.
 - The old single-mosque app (`app.js`, `hash-chain.js`, `translations/`) is still in the folder for reference but is not loaded.
-- Database: 001 = committees, modules, roles, normal tables + security. 002 = funds + tamper-evident ledger. 003 = fee/salary functions. All are safe to re-run.
+- Database: 001 = committees, modules, roles, normal tables + security. 002 = funds + tamper-evident ledger. 003 = fee/salary functions. 004 = `profiles.preferred_language`. All are safe to re-run.
 
 ## How to ship a change
 1. Work on a branch, run the tests, then merge into `main` and push. Netlify publishes `main` by itself in about a minute and the installed phone app refreshes itself.
@@ -57,7 +57,7 @@ Money is kept in a ledger that cannot be edited or deleted, and any tampering is
 
 ## How to run the tests
 - Open a terminal in the `tests` folder. First time only: `npm install`.
-- `npm run test:db` (147 checks on the database rules) and `npm run test:ui` (131 checks on the screens). Both must show 0 failed.
+- `npm run test:db` (147 checks on the database rules) and `npm run test:ui` (about 150 checks on the screens). Both must show 0 failed.
 - Update a test whenever behaviour changes.
 
 ## Things to remember

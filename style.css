@@ -70,13 +70,34 @@ body {
   flex-direction: column;
 }
 
-/* RTL Support for Urdu */
+/* RTL Support for Urdu and Kashmiri: Nastaliq font needs tall line spacing so dots and vowel marks are not clipped */
 [dir="rtl"] body,
 [dir="rtl"] {
   font-family: var(--font-urdu), var(--font-sans);
-  text-align: right;
+  text-align: start;
   direction: rtl;
+  line-height: 2.1;
 }
+/* numbers, phone numbers, receipt codes and rupee amounts stay left-to-right and readable inside right-to-left text */
+[dir="rtl"] input[type="tel"], [dir="rtl"] input[type="number"], [dir="rtl"] input[type="date"],
+[dir="rtl"] .receipt-val, [dir="rtl"] .metric-card-amount, [dir="rtl"] .num {
+  direction: ltr;
+  unicode-bidi: plaintext;
+}
+[dir="rtl"] .metric-card-amount, [dir="rtl"] input[type="tel"], [dir="rtl"] input[type="number"] { text-align: end; }
+
+/* Fonts for each script (Hindi/Marathi use Devanagari, Assamese uses Bengali script) */
+:lang(hi) body, :lang(mr) body, :lang(hi), :lang(mr) { font-family: "Noto Sans Devanagari", var(--font-sans); }
+:lang(bn) body, :lang(as) body, :lang(bn), :lang(as) { font-family: "Noto Sans Bengali", var(--font-sans); }
+:lang(gu) body, :lang(gu) { font-family: "Noto Sans Gujarati", var(--font-sans); }
+:lang(ml) body, :lang(ml) { font-family: "Noto Sans Malayalam", var(--font-sans); }
+:lang(ta) body, :lang(ta) { font-family: "Noto Sans Tamil", var(--font-sans); }
+:lang(te) body, :lang(te) { font-family: "Noto Sans Telugu", var(--font-sans); }
+:lang(kn) body, :lang(kn) { font-family: "Noto Sans Kannada", var(--font-sans); }
+:lang(or) body, :lang(or) { font-family: "Noto Sans Oriya", var(--font-sans); }
+:lang(pa) body, :lang(pa) { font-family: "Noto Sans Gurmukhi", var(--font-sans); }
+/* these scripts have tall marks too */
+:lang(hi), :lang(mr), :lang(bn), :lang(as), :lang(gu), :lang(ml), :lang(ta), :lang(te), :lang(kn), :lang(or), :lang(pa) { line-height: 1.7; }
 
 /* ==========================================================================
    3. Accessible Touch Elements (Buttons & Inputs >= 48px)
@@ -478,13 +499,8 @@ textarea.form-control {
 .data-table th,
 .data-table td {
   padding: 12px 14px;
-  text-align: left;
+  text-align: start;
   border-bottom: 1px solid var(--border-subtle);
-}
-
-[dir="rtl"] .data-table th,
-[dir="rtl"] .data-table td {
-  text-align: right;
 }
 
 .data-table th {
@@ -676,7 +692,7 @@ textarea.form-control {
 .toast-container {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  inset-inline-end: 20px;
   z-index: 2000;
   display: flex;
   flex-direction: column;
@@ -684,10 +700,6 @@ textarea.form-control {
   max-width: 90vw;
 }
 
-[dir="rtl"] .toast-container {
-  right: auto;
-  left: 20px;
-}
 
 .toast {
   background-color: var(--text-main);
@@ -760,11 +772,7 @@ textarea.form-control {
 .receipt-val {
   font-weight: 700;
   color: var(--text-main);
-  text-align: right;
-}
-
-[dir="rtl"] .receipt-val {
-  text-align: left;
+  text-align: end;
 }
 
 /* ==========================================================================

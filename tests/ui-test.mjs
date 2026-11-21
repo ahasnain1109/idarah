@@ -154,7 +154,7 @@ async function boot(opts) {
   w.confirm = () => true;
   if (!opts.noConfig) w.IDARAH_SUPABASE = { url: 'https://x.supabase.co', anonKey: 'anon' };
   w.supabase = { createClient: () => be.client };
-  for (const f of ['config.js', 'i18n-hi.js', 'i18n-bn.js', 'i18n-ur.js', 'i18n.js', 'platform-modules.js', 'platform-core.js', 'platform-onboarding.js', 'platform-ui.js', 'platform-finance.js', 'platform-madarsa.js', 'platform-mosque.js', 'platform-reports.js', 'platform-app.js']) w.eval(read(f));
+  for (const f of ['config.js', ...['hi', 'ur', 'bn', 'gu', 'ks', 'ml', 'ta', 'te', 'kn', 'mr', 'as', 'or', 'pa'].map(l => 'locales/' + l + '.js'), 'i18n.js', 'platform-modules.js', 'platform-core.js', 'platform-onboarding.js', 'platform-ui.js', 'platform-finance.js', 'platform-madarsa.js', 'platform-mosque.js', 'platform-reports.js', 'platform-app.js']) w.eval(read(f));
   await tick(60);
   return { w, d: w.document, be };
 }
@@ -549,7 +549,7 @@ console.log('\n== language switcher ==');
 {
   const { w, d } = await boot({});
   const sel = d.querySelector('select.pf-lang');
-  ok('login screen has a language dropdown with 4 languages', !!sel && sel.options.length === 4 && Array.from(sel.options).map(o => o.value).join() === 'en,hi,bn,ur');
+  ok('login screen has a language dropdown with 14 languages', !!sel && sel.options.length === 14 && Array.from(sel.options).map(o => o.value).join() === 'en,hi,ur,bn,gu,ks,ml,ta,te,kn,mr,as,or,pa');
   ok('starts in English, left-to-right', d.documentElement.getAttribute('lang') === 'en' && d.documentElement.getAttribute('dir') === 'ltr' && /Welcome to Idarah/.test(d.body.textContent));
   setVal(w, sel, 'hi'); await tick();
   ok('Hindi: text changes, still left-to-right', /इदारा में आपका स्वागत है/.test(d.body.textContent) && d.documentElement.getAttribute('dir') === 'ltr');
@@ -560,6 +560,14 @@ console.log('\n== language switcher ==');
   ok('Urdu: placeholder is translated too', /10 ہندسوں/.test(d.querySelector('#login-phone').getAttribute('placeholder')));
   d.querySelector('#tab-signup').click(); await tick();
   ok('language stays after moving to Sign Up', /اکاؤنٹ بنائیں/.test(d.body.textContent) && d.querySelector('select.pf-lang').value === 'ur');
+  setVal(w, d.querySelector('select.pf-lang'), 'ks'); await tick();
+  ok('Kashmiri: page turns right-to-left with lang="ks"', d.documentElement.getAttribute('dir') === 'rtl' && d.documentElement.getAttribute('lang') === 'ks');
+  setVal(w, d.querySelector('select.pf-lang'), 'gu'); await tick();
+  ok('Gujarati: text changes, left-to-right', /[઀-૿]/.test(d.body.textContent) && d.documentElement.getAttribute('dir') === 'ltr');
+  for (const l of ['ml', 'ta', 'te', 'kn', 'mr', 'as', 'or', 'pa']) {
+    setVal(w, d.querySelector('select.pf-lang'), l); await tick();
+    ok(l + ': works with no missing-text errors (falls back to English), left-to-right', /Welcome to Idarah/.test(d.body.textContent) && d.documentElement.getAttribute('lang') === l && d.documentElement.getAttribute('dir') === 'ltr');
+  }
   setVal(w, d.querySelector('select.pf-lang'), 'en'); await tick();
   ok('back to English restores the original text', /Create Account/.test(d.body.textContent) && d.documentElement.getAttribute('dir') === 'ltr');
   ok('choice is remembered on the phone', w.localStorage.getItem('idarah_lang') === 'en');
@@ -572,7 +580,7 @@ console.log('\n== language switcher ==');
   setVal(w, sel, 'hi'); await tick();
   ok('Hindi on the main screen: Log out and tabs change', /लॉग आउट/.test(d.querySelector('#pf-logout').textContent) && /डैशबोर्ड/.test(d.querySelector('.nav-tabs-container').textContent));
 
-  ok('language names in the dropdown never get translated', Array.from(d.querySelectorAll('select.pf-lang option')).map(o => o.textContent).join() === 'English,हिन्दी,বাংলা,اردو');
+  ok('language names in the dropdown never get translated', Array.from(d.querySelectorAll('select.pf-lang option')).map(o => o.textContent).join() === 'English,हिन्दी (Hindi),اردو (Urdu),বাংলা (Bengali),ગુજરાતી (Gujarati),کٲشُر (Kashmiri),മലയാളം (Malayalam),தமிழ் (Tamil),తెలుగు (Telugu),ಕನ್ನಡ (Kannada),मराठी (Marathi),অসমীয়া (Assamese),ଓଡ଼ିଆ (Odia),ਪੰਜਾਬੀ (Punjabi)');
   setVal(w, d.querySelector('select.pf-lang'), 'ur'); await tick();
   const sample = d.createElement('div'); sample.innerHTML = '<p>Step 2 of 3: Dargah</p><p>Donation recorded: RCP-0001</p><p>Not enough money in General Fund. Available: ₹10.</p><p>Some user typed note</p>'; d.body.appendChild(sample); await tick();
   const ps = Array.from(sample.querySelectorAll('p')).map(p => p.textContent);

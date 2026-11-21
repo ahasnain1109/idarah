@@ -85,6 +85,7 @@
       if (event === 'SIGNED_OUT') { App.session = null; App.ws = null; renderAuth(); }
       else if (event === 'TOKEN_REFRESHED') App.session = session;
     });
+    if (window.I18N) window.I18N.onChange(l => { if (App.session) P.api.setPreferredLanguage(App.session.user.id, l); });
     if (App.session) await enterApp(); else renderAuth();
   }
 
@@ -94,6 +95,13 @@
       App.ws = await P.api.loadWorkspace(App.session.user.id);
     } catch (err) {
       root().innerHTML = retryScreen(err.message); return;
+    }
+    // language follows the user across devices (saved on their profile)
+    if (window.I18N) {
+      const uid = App.session.user.id;
+      const pref = await P.api.getPreferredLanguage(uid);
+      if (pref && pref !== window.I18N.lang && window.I18N.LANGS[pref]) await window.I18N.setLang(pref, { silent: true });
+      else if (!pref && window.I18N.lang !== 'en') P.api.setPreferredLanguage(uid, window.I18N.lang);
     }
     const ids = App.ws.memberships.map(m => m.committee.id);
     const saved = lsGet(ACTIVE_KEY);

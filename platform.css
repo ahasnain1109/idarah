@@ -25,8 +25,7 @@
 .pf-tabs { display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 2px solid var(--border-subtle); }
 .pf-tabs .nav-tab-btn { flex: 1; text-align: center; }
 .pf-chip { display: inline-block; background: var(--primary-light); color: var(--primary); border-radius: var(--radius-full); padding: 2px 10px; font-size: 0.78rem; font-weight: 700; margin: 2px 0; }
-.pf-list { margin: 8px 0 12px 20px; }
-[dir="rtl"] .pf-list { margin: 8px 20px 12px 0; }
+.pf-list { margin: 8px 0 12px; margin-inline-start: 20px; }
 .pf-kv th { width: 40%; background: #f8fafc; font-weight: 600; }
 
 .pf-btnrow { display: flex; gap: 8px; flex-wrap: wrap; }

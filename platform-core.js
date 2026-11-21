@@ -137,6 +137,18 @@
     'donor_or_payee_name, donor_phone, receipt_number, verification_code, reversed_entry_id, is_reversed, reversal_reason, entry_hash';
 
   P.api = {
+    /** Saved language of this user (null if none, or if the database column is not there yet). Never throws. */
+    async getPreferredLanguage(userId) {
+      try {
+        const res = await P.client().from('profiles').select('preferred_language').eq('id', userId).maybeSingle();
+        return (!res.error && res.data && res.data.preferred_language) || null;
+      } catch (e) { return null; }
+    },
+    /** Remember the language on the user's profile. Fails quietly: the phone still remembers it. */
+    async setPreferredLanguage(userId, lang) {
+      try { await P.client().from('profiles').update({ preferred_language: lang }).eq('id', userId); } catch (e) { /* ignore */ }
+    },
+
     /** Profile + every committee the user belongs to + the modules they may see. */
     async loadWorkspace(userId) {
       return guarded(async () => {

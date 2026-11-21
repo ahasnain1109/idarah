@@ -1,15 +1,25 @@
 /**
- * Idarah - language switcher (English, Hindi, Bengali, Urdu).
+ * Idarah - language switcher (14 Indian languages).
  * i18n.js
  *
  * How it works: the screens are written in English. This file watches the page and swaps any
- * English text it finds in the chosen language's list (i18n-hi.js, i18n-bn.js, i18n-ur.js).
- * Text that is not in a list simply stays in English. Urdu turns the page right-to-left.
+ * English text it finds in the chosen language's list (locales/xx.js). A list is loaded only when
+ * that language is chosen. Text that is not in a list simply stays in English.
+ * Urdu and Kashmiri turn the page right-to-left.
  */
 (function () {
   'use strict';
   const KEY = 'idarah_lang';
-  const LANGS = { en: 'English', hi: 'हिन्दी', bn: 'বাংলা', ur: 'اردو' };
+  // code -> native name, English name, direction
+  const META = {
+    en: ['English', 'English', 'ltr'], hi: ['हिन्दी', 'Hindi', 'ltr'], ur: ['اردو', 'Urdu', 'rtl'],
+    bn: ['বাংলা', 'Bengali', 'ltr'], gu: ['ગુજરાતી', 'Gujarati', 'ltr'], ks: ['کٲشُر', 'Kashmiri', 'rtl'],
+    ml: ['മലയാളം', 'Malayalam', 'ltr'], ta: ['தமிழ்', 'Tamil', 'ltr'], te: ['తెలుగు', 'Telugu', 'ltr'],
+    kn: ['ಕನ್ನಡ', 'Kannada', 'ltr'], mr: ['मराठी', 'Marathi', 'ltr'], as: ['অসমীয়া', 'Assamese', 'ltr'],
+    or: ['ଓଡ଼ିଆ', 'Odia', 'ltr'], pa: ['ਪੰਜਾਬੀ', 'Punjabi', 'ltr']
+  };
+  const LANGS = {};
+  Object.keys(META).forEach(k => { LANGS[k] = META[k][0] + (k === 'en' ? '' : ' (' + META[k][1] + ')'); });
   window.I18N_DICT = window.I18N_DICT || {};
 
   let lang = 'en';
@@ -89,17 +99,37 @@
   function setDir() {
     const h = document.documentElement;
     h.setAttribute('lang', lang);
-    h.setAttribute('dir', lang === 'ur' ? 'rtl' : 'ltr');
+    h.setAttribute('dir', META[lang][2]);
   }
 
-  function setLang(l) {
-    if (!LANGS[l]) return;
-    lang = l;
-    try { localStorage.setItem(KEY, l); } catch (e) { /* ignore */ }
-    setDir();
-    walk(document.body);
-    document.querySelectorAll('select.pf-lang').forEach(s => { s.value = l; });
+  // Load locales/<code>.js only when needed. A missing or failed file just means English text.
+  function loadDict(l) {
+    if (l === 'en' || window.I18N_DICT[l]) return Promise.resolve();
+    return new Promise(resolve => {
+      const sc = document.createElement('script');
+      sc.src = 'locales/' + l + '.js';
+      sc.onload = sc.onerror = () => resolve();
+      document.head.appendChild(sc);
+    });
   }
+
+  let loadSeq = 0;
+  function setLang(l, opts) {
+    if (!LANGS[l]) return Promise.resolve();
+    const seq = ++loadSeq;
+    return loadDict(l).then(() => {
+      if (seq !== loadSeq) return;               // user picked another language meanwhile
+      lang = l;
+      try { localStorage.setItem(KEY, l); } catch (e) { /* ignore */ }
+      setDir();
+      walk(document.body);
+      document.querySelectorAll('select.pf-lang').forEach(s => { s.value = l; });
+      if (!(opts && opts.silent)) listeners.forEach(f => { try { f(l); } catch (e) { /* ignore */ } });
+    });
+  }
+  // The app can listen for a language change (to save it on the user's profile).
+  const listeners = [];
+  function onChange(f) { listeners.push(f); }
 
   function selectHtml() {
     return '<select class="form-control pf-lang" aria-label="Language" title="Language">' +
@@ -133,8 +163,8 @@
     obs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
   }
 
-  window.I18N = { get lang() { return lang; }, LANGS: LANGS, t: t, setLang: setLang, selectHtml: selectHtml };
+  window.I18N = { get lang() { return lang; }, LANGS: LANGS, t: t, setLang: setLang, onChange: onChange, selectHtml: selectHtml };
 
-  function init() { setDir(); walk(document.body); start(); }
+  function init() { setDir(); start(); loadDict(lang).then(() => walk(document.body)); }
   if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
 })();
